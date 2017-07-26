@@ -29,6 +29,9 @@ pip-log.txt
 .tox
 nosetests.xml
 
+#DLL
+*.dll
+
 # Translations
 *.mo
 

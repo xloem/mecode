@@ -48,8 +48,8 @@ This software was developed by the Lewis Lab at Harvard University and Voxel8 In
 import math
 import os
 from collections import defaultdict
-
-from .printer import Printer
+from devices.keyence_line_scanner import KeyenceLineScanner
+from printer import Printer
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -87,7 +87,7 @@ class G(object):
                  x_axis='X', y_axis='Y', z_axis='Z', extrude=False,
                  filament_diameter=1.75, layer_height=0.19,
                  extrusion_width=0.35, extrusion_multiplier=1, setup=True,
-                 lineend='os'):
+                 lineend='os',scanner=False):
         """
         Parameters
         ----------
@@ -197,6 +197,10 @@ class G(object):
             self.out_fd = outfile
         else:
             self.out_fd = None
+
+        #Setup scanning
+        if scanner:
+            self.scan = KeyenceLineScanner()
 
         if setup:
             self.setup()
@@ -801,6 +805,57 @@ class G(object):
 
     def set_valve(self, num, value):
         self.write('$DO{}.0={}'.format(num, value))
+
+    def scanArea(self,x_start,x_stop, y_start, y_stop, y_step=0.3):
+        start_string="""PSOCONTROL Y RESET
+PSOTRACK Y INPUT 7
+PSODISTANCE Y FIXED ABS(UNITSTOCOUNTS(Y, {}/16))
+PSOPULSE Y TIME 100, 100
+PSOOUTPUT Y PULSE
+PSOCONTROL Y ARM""".format(y_step)
+        stop_string = "PSOCONTROL Y OFF"
+
+        #Scnnaer constants
+        scan_buffer = 15.0
+        scan_width = 150.0
+
+        #Actual scanning area in x
+        area_x_start = x_start - scan_buffer
+        area_x_stop = x_stop + scan_buffer
+        area_width = area_x_stop - area_x_start
+        num_passes = int(math.ceil(area_width/scan_width))
+
+        if num_passes % 2 == 0: #Is even
+            scan_x_start = area_x_start + area_width/2 - (scan_width/2*num_passes/2)
+        else: #Is odd
+            scan_x_start = area_x_start + area_width/2 - (scan_width*(num_passes-1)/2)
+        scan_x_length = (num_passes-1)*scan_width
+
+        #Actual scanning area in y
+        scan_y_start = y_start - scan_buffer
+        scan_y_length = y_stop-y_start+2*scan_buffer
+
+        #Move to starting point
+        self.absolute()
+        self.move(scan_x_start,scan_y_start)
+        
+        #Start second process for capturing scan data
+        profile_count = int(math.floor(scan_y_length/y_step))*num_passes
+        print profile_count
+        from multiprocessing.pool import ThreadPool
+        pool = ThreadPool(processes=1)
+        result = pool.apply_async(self.scan.continuous_get_profiles,(profile_count,))
+
+        #Start scan
+        self.write(start_string)
+        self.relative()
+        if num_passes > 1:
+            self.meander(scan_x_length,scan_y_length,scan_width,orientation='y')
+        else:
+            self.move(y=scan_y_length)
+        self.write(stop_string)
+    
+        return result.get()
 
     # Public Interface  #######################################################
 
