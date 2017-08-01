@@ -806,6 +806,27 @@ class G(object):
     def set_valve(self, num, value):
         self.write('$DO{}.0={}'.format(num, value))
 
+    def genCRC8(self,data):
+    CRC8 = 0
+    for letter in list(bytearray(data)):
+        for i in range(8):
+            if (letter^CRC8)&0x01:
+                CRC8 ^= 0x18
+                CRC8 >>= 1
+                CRC8 |= 0x80
+            else:
+                CRC8 >>= 1
+            letter >>= 1
+    return command +'{:02X}'.format(CRC8)
+
+    def omni_on(self, com_port):
+        command = 'OPN'
+        self.write('Call sendOmni P{} Q{}'.format(com_port, self.genCRC8(command))):
+
+    def omni_off(self, com_port):
+        command = 'CLS'
+        self.write('Call sendOmni P{} Q{}'.format(com_port, self.genCRC8(command))):
+
     def scanArea(self,x_start,x_stop, y_start, y_stop, y_step=0.3):
         start_string="""PSOCONTROL Y RESET
 PSOTRACK Y INPUT 7

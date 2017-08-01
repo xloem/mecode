@@ -2,7 +2,7 @@
 
 M2
 
-;##########Functions############;
+;##########Nordson Pressure Box Functions############;
 DFS setPress        
          
         $strtask1 = DBLTOSTR( $P, 0 )            
@@ -169,4 +169,18 @@ DFS togglePress
         FILECLOSE $hFile
         G4 P0.15
 
+ENDDFS
+
+;##########Omnicure Functions############;
+DFS sendOmni
+         
+        $strtask1 = DBLTOSTR( $P, 0 )            
+        $strtask1 = "COM" + $strtask1
+        $hFile = FILEOPEN $strtask1, 2
+        COMMINIT $hFile, "baud=19200 parity=N data=8 stop=1"
+        COMMSETTIMEOUT $hFile, -1, -1, 1000
+        
+        FILEWRITE $hFile "CONN18\r"
+        FILEWRITE $hFile $Q+"\r"
+        FILEWRITE $hFile "DCONE1\r"
 ENDDFS
