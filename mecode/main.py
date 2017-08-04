@@ -806,25 +806,6 @@ class G(object):
     def set_valve(self, num, value):
         self.write('$DO{}.0={}'.format(num, value))
 
-    def genCRC8(self,data):
-        CRC8 = 0
-        for letter in list(bytearray(data)):
-            for i in range(8):
-                if (letter^CRC8)&0x01:
-                    CRC8 ^= 0x18
-                    CRC8 >>= 1
-                    CRC8 |= 0x80
-                else:
-                    CRC8 >>= 1
-                letter >>= 1
-        return data +'{:02X}'.format(CRC8)
-
-    def omni_on(self, com_port):
-        self.write('Call omniOn P{}'.format(com_port))
-
-    def omni_off(self, com_port):
-        self.write('Call omniOff P{}'.format(com_port))
-
     def scanArea(self,x_start,x_stop, y_start, y_stop, y_step=0.3):
         start_string="""PSOCONTROL Y RESET
 PSOTRACK Y INPUT 7
@@ -834,25 +815,23 @@ PSOOUTPUT Y PULSE
 PSOCONTROL Y ARM""".format(y_step)
         stop_string = "PSOCONTROL Y OFF"
 
-        #Scnnaer constants
-        scan_buffer = 15.0
-        scan_width = 150.0
+        #Scanner constants
+        scan_width = self.scan.scan_width
 
         #Actual scanning area in x
-        area_x_start = x_start - scan_buffer
-        area_x_stop = x_stop + scan_buffer
-        area_width = area_x_stop - area_x_start
+        area_width = x_stop - x_start
         num_passes = int(math.ceil(area_width/scan_width))
+        scan_trim = (scan_width*num_passes-area_width)/2
 
         if num_passes % 2 == 0: #Is even
-            scan_x_start = area_x_start + area_width/2 - (scan_width/2*num_passes/2)
+            scan_x_start = x_start + area_width/2 - (scan_width/2+(num_passes/2-1)*scan_width)
         else: #Is odd
-            scan_x_start = area_x_start + area_width/2 - (scan_width*(num_passes-1)/2)
+            scan_x_start = x_start + area_width/2 - (scan_width*(num_passes-1)/2)
         scan_x_length = (num_passes-1)*scan_width
 
         #Actual scanning area in y
-        scan_y_start = y_start - scan_buffer
-        scan_y_length = y_stop-y_start+2*scan_buffer
+        scan_y_start = y_start
+        scan_y_length = y_stop-y_start
 
         #Move to starting point
         self.absolute()
@@ -864,7 +843,7 @@ PSOCONTROL Y ARM""".format(y_step)
         from multiprocessing.pool import ThreadPool
         pool = ThreadPool(processes=1)
         result = pool.apply_async(self.scan.continuous_get_profiles,(profile_count,))
-
+        
         #Start scan
         self.write(start_string)
         self.relative()
@@ -873,8 +852,9 @@ PSOCONTROL Y ARM""".format(y_step)
         else:
             self.move(y=scan_y_length)
         self.write(stop_string)
-    
-        return result.get()
+        
+        #return result.get()
+        return self.scan.processScanResults(result.get(),num_passes,scan_width,scan_trim), x_start, y_start, y_step
 
     # Public Interface  #######################################################
 

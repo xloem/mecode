@@ -18,7 +18,7 @@ from ctypes import *
 import numpy as np
 
 class KeyenceLineScanner(object):
-	def __init__(self,device_id=0,measurement_count=16,max_profile_count=800):
+	def __init__(self,device_id=0,model='7300',measurement_count=16):
 		"""
 		Parameters
 		----------
@@ -26,12 +26,22 @@ class KeyenceLineScanner(object):
 			Specifies device id of profilometer to connect to. Device ids start at 0.
 		measurement_count : int (default : 16)
 			Corresponds to the number of 'out' measurements programmed to the controller.
-		max_profile_count: int (default: 800)
-			The number of data points along a line in the returned profile. Defaults to 800 for this line of scanners.
+		model : String (default: '7300')
+ 			Specifies the sensor head model that is being used. This is used for scan path planning based on scaning width.
 		"""
+		if model == '7300':
+			self.scan_width = 150.0
+			self.IXPitch = 0.3
+		elif model == '7080':
+			self.scan_width = 30.0
+			self.IXPitch = 0.05
+		else:
+			raise ValueError('Unknown model number.')
+
 		self.device_id = device_id
 		self.measurement_count = measurement_count
-		self.max_profile_count = max_profile_count
+		#The number of data points along a line in the returned profile. Defaults to 800 for this line of scanners.
+		self.max_profile_count = 800 
 
 		#Dynamic Link Library Setup (assumes located in same directory)
 		dll_name = "LJV7_IF.dll"
@@ -40,6 +50,9 @@ class KeyenceLineScanner(object):
 		self.connect()
 
 	def setup_scan(self,start_pos,interval):
+		"""
+		Initialize the starting position in Y and pitch in Y
+		"""
 		self.IYStart = start_pos
 		self.IYPitch = interval
 
@@ -78,7 +91,7 @@ class KeyenceLineScanner(object):
 
 	def get_profile(self,profile_count,erase_after=False):
 		"""
-		Returns multiple profiles using the high-speed mode
+		Returns multiple profiles from memory using the high-speed mode
 
 		Parameters
 		----------
@@ -87,6 +100,7 @@ class KeyenceLineScanner(object):
 		erase_after = bool (default: False)
 			Whether or not to delete the values from memory after reading
 		"""
+
 		#Profile Request Setup
 		req = self.LJV7IF_GET_PROFILE_REQ()
 		req.byTargetBank = 0
@@ -126,12 +140,17 @@ class KeyenceLineScanner(object):
 		#self.wProfDataCnt = profileInfo.wProfDataCnt
 
 		#Removes header and footer
-		#return np.delete(profiles2d,range(6),axis=1)[:,:-1]
-		return profiles2d[6:-1]
+		if profile_count > 1:
+			profiles2d = np.reshape(profiles,(profile_count,-1))/100000.0
+			return np.delete(profiles2d,range(6)+[len(profiles2d[0])-1],axis=1)
+		else:
+			profiles2d = profiles/100000.0
+			return np.delete(profiles2d,range(6)+[len(profiles2d)-1])
 	
 	def get_measurement(self):
 		"""
 		Returns the 'out' data points as specified on the controller
+		Note: Controller must be set to advanced mode
 		"""
 		#Measurement buffer setup
 		rsp = (self.LJV7IF_MEASURE_DATA*self.measurement_count)()
@@ -149,11 +168,14 @@ class KeyenceLineScanner(object):
 	def get_profile_storage(self,profile_count,erase_after=False):
 		"""
 		Returns multiple profiles from storage using the advanced mode
+		Notes: Seems to only work for roughly <200 points? Don't know why.
 
 		Parameters
 		----------
 		profile_count = int
 			Number of profiles to read from storage
+		erase_after = bool (default: False)
+			Whether or not to delete the values from memory after reading
 		"""
 
 		#Profile Request Setup
@@ -208,6 +230,15 @@ class KeyenceLineScanner(object):
 		return profiles
 
 	def continuous_get_profiles(self,profile_count):
+		"""
+		Continuously read profiles from memory as they become available.
+		Stops reading when it reads a specified number of counts.
+
+		Parameters
+		----------
+		profile_count = int
+			Number of profiles to read before stopping
+		"""
 		aquired = []
 		aquiredCount = 0
 		while aquiredCount < profile_count:
@@ -216,6 +247,26 @@ class KeyenceLineScanner(object):
 				aquiredCount += 1
 				#print aquiredCount
 		return np.array(aquired)
+
+	def processScanResults(self,data,num_passes,scan_width,scan_trim):
+		"""
+		Cleans and correctly formats a 2d scan
+		Parameters
+		----------
+		export_location = String
+			Location to save exported .csv point cloud file
+		data = float
+			2D numpy array of scan data
+		"""
+		passes = np.vsplit(data,num_passes)
+		passes_fixed = [x if ind%2 else np.flipud(x) for ind, x in enumerate(passes) ]
+		passes_trimmed = [x[:,251:751] if ind>0 else x[:,250:751] for ind, x in enumerate(passes_fixed)]
+		passes_final = np.hstack(passes_trimmed)
+		trim_ind = int(scan_trim/self.IXPitch)
+		passes_finalTrim = passes_final[:,trim_ind:-trim_ind]
+		scan2d = np.flipud(passes_finalTrim)
+
+		return scan2d
 
 	def export_point_cloud(self,export_location,data):
 		"""
@@ -239,6 +290,7 @@ class KeyenceLineScanner(object):
 					z = data[i,j]
 					file.write('{},{},{}\n'.format(x,y,z))
 		file.close()
+
 
 	class LJV7IF_MEASURE_DATA(Structure):
 		"""
