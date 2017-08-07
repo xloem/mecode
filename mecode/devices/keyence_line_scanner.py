@@ -259,8 +259,8 @@ class KeyenceLineScanner(object):
 			2D numpy array of scan data
 		"""
 		passes = np.vsplit(data,num_passes)
-		passes_fixed = [x if ind%2 else np.flipud(x) for ind, x in enumerate(passes) ]
-		passes_trimmed = [x[:,251:751] if ind>0 else x[:,250:751] for ind, x in enumerate(passes_fixed)]
+		passes_fixed = [np.fliplr(x) if ind%2 else np.fliplr(np.flipud(x)) for ind, x in enumerate(passes) ]
+		passes_trimmed = [x[:,151:651] if ind>0 else x[:,150:651] for ind, x in enumerate(passes_fixed)]
 		passes_final = np.hstack(passes_trimmed)
 		trim_ind = int(scan_trim/self.IXPitch)
 		passes_finalTrim = passes_final[:,trim_ind:-trim_ind]
