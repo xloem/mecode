@@ -1,0 +1,250 @@
+'' Example program to test camming motion for all 4 axis in sine wave pattern
+' Created by Robert Weeks
+
+DVAR $Interpolation
+DVAR $Slave1Table
+DVAR $Slave2Table
+DVAR $Slave3Table
+DVAR $Slave4Table
+DVAR $Slave5Table
+DVAR $Slave6Table
+DVAR $Slave7Table
+DVAR $Slave8Table
+DVAR $Slave9Table
+DVAR $Slave10Table
+DVAR $Slave11Table
+DVAR $Slave12Table
+DVAR $Slave13Table
+DVAR $Slave14Table
+DVAR $Slave15Table
+DVAR $Slave16Table
+
+DVAR $MasterStartPosition 
+DVAR $Slave1StartPosition
+DVAR $Slave2StartPosition
+DVAR $Slave3StartPosition
+DVAR $Slave4StartPosition
+DVAR $Slave5StartPosition
+DVAR $Slave6StartPosition
+DVAR $Slave7StartPosition
+DVAR $Slave8StartPosition 
+DVAR $Slave9StartPosition
+DVAR $Slave10StartPosition
+DVAR $Slave11StartPosition
+DVAR $Slave12StartPosition 
+DVAR $Slave13StartPosition
+DVAR $Slave14StartPosition
+DVAR $Slave15StartPosition
+DVAR $Slave16StartPosition 
+
+DVAR $TrackingMode
+DVAR $SyncMode
+DVAR $MasterMotionRange
+
+' Set motion values 
+$MasterMotionRange = 400.000000 
+$MasterStartPosition = 0.000000
+$Slave1StartPosition = 6.000000
+$Slave2StartPosition = 7.854101
+$Slave3StartPosition = 9.526711
+$Slave4StartPosition = 10.85410
+$Slave5StartPosition = 11.70633
+$Slave6StartPosition = 12.00000
+$Slave7StartPosition = 11.70633
+$Slave8StartPosition = 10.85410
+$Slave9StartPosition = 9.526711
+$Slave10StartPosition = 7.854101
+$Slave11StartPosition = 6.000000
+$Slave12StartPosition = 4.145898
+$Slave13StartPosition = 2.473288
+$Slave14StartPosition = 1.145898
+$Slave15StartPosition = 0.293660
+$Slave16StartPosition = 0.000000
+
+' Specify Interpolation type:
+' Currently set to third order splines
+$Interpolation = 1
+
+' Specify Tracking mode:
+' Currently set to master axis command position
+$TrackingMode = 1 
+
+' Specify table number. Up to 99 tables allowed. 
+$Slave1Table = 1
+$Slave2Table = 2
+$Slave3Table = 3
+$Slave4Table = 4
+$Slave5Table = 5
+$Slave6Table = 6
+$Slave7Table = 7
+$Slave8Table = 8
+$Slave9Table = 9
+$Slave10Table = 10
+$Slave11Table = 11
+$Slave12Table = 12
+$Slave13Table = 13
+$Slave14Table = 14
+$Slave15Table = 15
+$Slave16Table = 16
+
+' Specify synchronization mode:
+' Currently set to absolute synchronization
+$SyncMode = 1
+
+' Turn off camming (if it was on)
+CAMSYNC a $Slave1Table 0 
+FREECAMTABLE $Slave1Table
+CAMSYNC b $Slave2Table 0 
+FREECAMTABLE $Slave2Table
+CAMSYNC c $Slave3Table 0 
+FREECAMTABLE $Slave3Table
+CAMSYNC d $Slave4Table 0 
+FREECAMTABLE $Slave4Table
+
+CAMSYNC XX $Slave5Table 0 
+FREECAMTABLE $Slave5Table
+CAMSYNC YY $Slave6Table 0 
+FREECAMTABLE $Slave6Table
+CAMSYNC ZZ $Slave7Table 0 
+FREECAMTABLE $Slave7Table
+CAMSYNC UU $Slave8Table 0 
+FREECAMTABLE $Slave8Table
+
+CAMSYNC AA2 $Slave9Table 0 
+FREECAMTABLE $Slave9Table
+CAMSYNC BB2 $Slave10Table 0 
+FREECAMTABLE $Slave10Table
+CAMSYNC CC2 $Slave11Table 0 
+FREECAMTABLE $Slave11Table
+CAMSYNC DD $Slave12Table 0 
+FREECAMTABLE $Slave12Table
+
+CAMSYNC xx $Slave13Table 0 
+FREECAMTABLE $Slave13Table
+CAMSYNC yy $Slave14Table 0 
+FREECAMTABLE $Slave14Table
+CAMSYNC zz $Slave15Table 0 
+FREECAMTABLE $Slave15Table
+CAMSYNC uu $Slave16Table 0 
+FREECAMTABLE $Slave16Table
+
+' Some motion setup. 
+PRIMARY
+VELOCITY OFF
+G65 F2000
+G66 F2000
+G90
+G1 F50.0
+G1 X0.0 Y $MasterStartPosition a $Slave1StartPosition b $Slave2StartPosition c $Slave3StartPosition d $Slave4StartPosition XX $Slave5StartPosition YY $Slave6StartPosition ZZ $Slave7StartPosition UU $Slave8StartPosition AA2 $Slave9StartPosition BB2 $Slave10StartPosition CC2 $Slave11StartPosition DD $Slave12StartPosition xx $Slave13StartPosition yy $Slave14StartPosition zz $Slave15StartPosition uu $Slave16StartPosition
+
+' Load and sync cam table 1:
+LOADCAMTABLE Y, $Slave1Table, a, $Interpolation, $TrackingMode, "a_sine.cam" NOWRAP
+CAMSYNC a $Slave1Table $SyncMode
+
+' Load and sync cam table 2:
+LOADCAMTABLE Y, $Slave2Table, b, $Interpolation, $TrackingMode, "b_sine.cam" NOWRAP
+CAMSYNC b $Slave2Table $SyncMode
+
+' Load and sync cam table 3:
+LOADCAMTABLE Y, $Slave3Table, c, $Interpolation, $TrackingMode, "c_sine.cam" NOWRAP
+CAMSYNC c $Slave3Table $SyncMode
+
+' Load and sync cam table 4:
+LOADCAMTABLE Y, $Slave4Table, d, $Interpolation, $TrackingMode, "d_sine.cam" NOWRAP
+CAMSYNC d $Slave4Table $SyncMode
+
+' Load and sync cam table 5:
+LOADCAMTABLE Y, $Slave5Table, XX, $Interpolation, $TrackingMode, "XX_sine.cam" NOWRAP
+CAMSYNC XX $Slave5Table $SyncMode
+
+' Load and sync cam table 6:
+LOADCAMTABLE Y, $Slave6Table, YY, $Interpolation, $TrackingMode, "YY_sine.cam" NOWRAP
+CAMSYNC YY $Slave6Table $SyncMode
+
+' Load and sync cam table 7:
+LOADCAMTABLE Y, $Slave7Table, ZZ, $Interpolation, $TrackingMode, "ZZ_sine.cam" NOWRAP
+CAMSYNC ZZ $Slave7Table $SyncMode
+
+' Load and sync cam table 8:
+LOADCAMTABLE Y, $Slave8Table, UU, $Interpolation, $TrackingMode, "UU_sine.cam" NOWRAP
+CAMSYNC UU $Slave8Table $SyncMode
+
+' Load and sync cam table 9:
+LOADCAMTABLE Y, $Slave9Table, AA2, $Interpolation, $TrackingMode, "AA2_sine.cam" NOWRAP
+CAMSYNC AA2 $Slave9Table $SyncMode
+
+' Load and sync cam table 10:
+LOADCAMTABLE Y, $Slave10Table, BB2, $Interpolation, $TrackingMode, "BB2_sine.cam" NOWRAP
+CAMSYNC BB2 $Slave10Table $SyncMode
+
+' Load and sync cam table 11:
+LOADCAMTABLE Y, $Slave11Table, CC2, $Interpolation, $TrackingMode, "CC2_sine.cam" NOWRAP
+CAMSYNC CC2 $Slave11Table $SyncMode
+
+' Load and sync cam table 12:
+LOADCAMTABLE Y, $Slave12Table, DD, $Interpolation, $TrackingMode, "DD_sine.cam" NOWRAP
+CAMSYNC DD $Slave12Table $SyncMode
+
+' Load and sync cam table 13:
+LOADCAMTABLE Y, $Slave13Table, xx, $Interpolation, $TrackingMode, "xxl_sine.cam" NOWRAP
+CAMSYNC xx $Slave13Table $SyncMode
+
+' Load and sync cam table 14:
+LOADCAMTABLE Y, $Slave14Table, yy, $Interpolation, $TrackingMode, "yyl_sine.cam" NOWRAP
+CAMSYNC yy $Slave14Table $SyncMode
+
+' Load and sync cam table 15:
+LOADCAMTABLE Y, $Slave15Table, zz, $Interpolation, $TrackingMode, "zzl_sine.cam" NOWRAP
+CAMSYNC zz $Slave15Table $SyncMode
+
+' Load and sync cam table 16:
+LOADCAMTABLE Y, $Slave16Table, uu, $Interpolation, $TrackingMode, "uul_sine.cam" NOWRAP
+CAMSYNC uu $Slave16Table $SyncMode
+
+
+' Move the master axis (the slave axis also moves because the table is active). 
+' Moves to the end of master travel range, waits 10s, then returns to start position.
+G90
+G1 F80.0
+G1 Y $MasterMotionRange
+DWELL 2
+G1 Y $MasterStartPosition
+
+' Turn off camming:
+CAMSYNC a $Slave1Table 0 
+FREECAMTABLE $Slave1Table
+CAMSYNC b $Slave2Table 0 
+FREECAMTABLE $Slave2Table
+CAMSYNC c $Slave3Table 0 
+FREECAMTABLE $Slave3Table
+CAMSYNC d $Slave4Table 0 
+FREECAMTABLE $Slave4Table
+
+CAMSYNC XX $Slave5Table 0 
+FREECAMTABLE $Slave5Table
+CAMSYNC YY $Slave6Table 0 
+FREECAMTABLE $Slave6Table
+CAMSYNC ZZ $Slave7Table 0 
+FREECAMTABLE $Slave7Table
+CAMSYNC UU $Slave8Table 0 
+FREECAMTABLE $Slave8Table
+
+CAMSYNC AA2 $Slave9Table 0 
+FREECAMTABLE $Slave9Table
+CAMSYNC BB2 $Slave10Table 0 
+FREECAMTABLE $Slave10Table
+CAMSYNC CC2 $Slave11Table 0 
+FREECAMTABLE $Slave11Table
+CAMSYNC DD $Slave12Table 0 
+FREECAMTABLE $Slave12Table
+
+CAMSYNC xx $Slave13Table 0 
+FREECAMTABLE $Slave13Table
+CAMSYNC yy $Slave14Table 0 
+FREECAMTABLE $Slave14Table
+CAMSYNC zz $Slave15Table 0 
+FREECAMTABLE $Slave15Table
+CAMSYNC uu $Slave16Table 0 
+FREECAMTABLE $Slave16Table
+
+END PROGRAM
