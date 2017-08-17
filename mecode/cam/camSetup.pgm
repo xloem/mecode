@@ -19,47 +19,49 @@ DVAR $Slave14Table
 DVAR $Slave15Table
 DVAR $Slave16Table
 
-DVAR $MasterStartPosition 
-DVAR $Slave1StartPosition
-DVAR $Slave2StartPosition
-DVAR $Slave3StartPosition
-DVAR $Slave4StartPosition
-DVAR $Slave5StartPosition
-DVAR $Slave6StartPosition
-DVAR $Slave7StartPosition
-DVAR $Slave8StartPosition 
-DVAR $Slave9StartPosition
-DVAR $Slave10StartPosition
-DVAR $Slave11StartPosition
-DVAR $Slave12StartPosition 
-DVAR $Slave13StartPosition
-DVAR $Slave14StartPosition
-DVAR $Slave15StartPosition
-DVAR $Slave16StartPosition 
+'DVAR $StartXPosition
+'DVAR $MasterStartPosition 
+'DVAR $Slave1StartPosition
+'DVAR $Slave2StartPosition
+'DVAR $Slave3StartPosition
+'DVAR $Slave4StartPosition
+'DVAR $Slave5StartPosition
+'DVAR $Slave6StartPosition
+'DVAR $Slave7StartPosition
+'DVAR $Slave8StartPosition 
+'DVAR $Slave9StartPosition
+'DVAR $Slave10StartPosition
+'DVAR $Slave11StartPosition
+'DVAR $Slave12StartPosition 
+'DVAR $Slave13StartPosition
+'DVAR $Slave14StartPosition
+'DVAR $Slave15StartPosition
+'DVAR $Slave16StartPosition 
 
 DVAR $TrackingMode
 DVAR $SyncMode
 DVAR $MasterMotionRange
 
 ' Set motion values 
-$MasterMotionRange = 400.000000 
-$MasterStartPosition = 0.000000
-$Slave1StartPosition = 6.000000
-$Slave2StartPosition = 7.854101
-$Slave3StartPosition = 9.526711
-$Slave4StartPosition = 10.85410
-$Slave5StartPosition = 11.70633
-$Slave6StartPosition = 12.00000
-$Slave7StartPosition = 11.70633
-$Slave8StartPosition = 10.85410
-$Slave9StartPosition = 9.526711
-$Slave10StartPosition = 7.854101
-$Slave11StartPosition = 6.000000
-$Slave12StartPosition = 4.145898
-$Slave13StartPosition = 2.473288
-$Slave14StartPosition = 1.145898
-$Slave15StartPosition = 0.293660
-$Slave16StartPosition = 0.000000
+'$StartXPosition = 250.0
+'$MasterMotionRange = 250.000000
+'$MasterStartPosition = 9.932750
+'$Slave1StartPosition = 50.7883333333
+'$Slave2StartPosition = 49.693
+'$Slave3StartPosition = 48.943
+'$Slave4StartPosition = 48.6886666667
+'$Slave5StartPosition = 48.924
+'$Slave6StartPosition = 49.4803333333
+'$Slave7StartPosition = 50.5113333333
+'$Slave8StartPosition = 51.893
+'$Slave9StartPosition = 53.395
+'$Slave10StartPosition = 54.9276666667
+'$Slave11StartPosition = 56.299
+'$Slave12StartPosition = 57.4733333333
+'$Slave13StartPosition = 58.1633333333
+'$Slave14StartPosition = 58.391
+'$Slave15StartPosition = 58.2453333333
+'$Slave16StartPosition = 57.5703333333
 
 ' Specify Interpolation type:
 ' Currently set to third order splines
@@ -135,7 +137,7 @@ G65 F2000
 G66 F2000
 G90
 G1 F50.0
-G1 X0.0 Y $MasterStartPosition a $Slave1StartPosition b $Slave2StartPosition c $Slave3StartPosition d $Slave4StartPosition XX $Slave5StartPosition YY $Slave6StartPosition ZZ $Slave7StartPosition UU $Slave8StartPosition AA2 $Slave9StartPosition BB2 $Slave10StartPosition CC2 $Slave11StartPosition DD $Slave12StartPosition xx $Slave13StartPosition yy $Slave14StartPosition zz $Slave15StartPosition uu $Slave16StartPosition
+G1 X $StartXPosition Y $MasterStartPosition a $Slave1StartPosition b $Slave2StartPosition c $Slave3StartPosition d $Slave4StartPosition XX $Slave5StartPosition YY $Slave6StartPosition ZZ $Slave7StartPosition UU $Slave8StartPosition AA2 $Slave9StartPosition BB2 $Slave10StartPosition CC2 $Slave11StartPosition DD $Slave12StartPosition xx $Slave13StartPosition yy $Slave14StartPosition zz $Slave15StartPosition uu $Slave16StartPosition
 
 ' Load and sync cam table 1:
 LOADCAMTABLE Y, $Slave1Table, a, $Interpolation, $TrackingMode, "a_sine.cam" NOWRAP
@@ -204,47 +206,47 @@ CAMSYNC uu $Slave16Table $SyncMode
 
 ' Move the master axis (the slave axis also moves because the table is active). 
 ' Moves to the end of master travel range, waits 10s, then returns to start position.
-G90
-G1 F80.0
-G1 Y $MasterMotionRange
-DWELL 2
-G1 Y $MasterStartPosition
+'G90
+'G1 F80.0
+'G1 Y $MasterMotionRange
+'DWELL 2
+'G1 Y $MasterStartPosition
 
 ' Turn off camming:
-CAMSYNC a $Slave1Table 0 
-FREECAMTABLE $Slave1Table
-CAMSYNC b $Slave2Table 0 
-FREECAMTABLE $Slave2Table
-CAMSYNC c $Slave3Table 0 
-FREECAMTABLE $Slave3Table
-CAMSYNC d $Slave4Table 0 
-FREECAMTABLE $Slave4Table
+'CAMSYNC a $Slave1Table 0 
+'FREECAMTABLE $Slave1Table
+'CAMSYNC b $Slave2Table 0 
+'FREECAMTABLE $Slave2Table
+'CAMSYNC c $Slave3Table 0 
+'FREECAMTABLE $Slave3Table
+'CAMSYNC d $Slave4Table 0 
+'FREECAMTABLE $Slave4Table
 
-CAMSYNC XX $Slave5Table 0 
-FREECAMTABLE $Slave5Table
-CAMSYNC YY $Slave6Table 0 
-FREECAMTABLE $Slave6Table
-CAMSYNC ZZ $Slave7Table 0 
-FREECAMTABLE $Slave7Table
-CAMSYNC UU $Slave8Table 0 
-FREECAMTABLE $Slave8Table
+'CAMSYNC XX $Slave5Table 0 
+'FREECAMTABLE $Slave5Table
+'CAMSYNC YY $Slave6Table 0 
+'FREECAMTABLE $Slave6Table
+'CAMSYNC ZZ $Slave7Table 0 
+'FREECAMTABLE $Slave7Table
+'CAMSYNC UU $Slave8Table 0 
+'FREECAMTABLE $Slave8Table
 
-CAMSYNC AA2 $Slave9Table 0 
-FREECAMTABLE $Slave9Table
-CAMSYNC BB2 $Slave10Table 0 
-FREECAMTABLE $Slave10Table
-CAMSYNC CC2 $Slave11Table 0 
-FREECAMTABLE $Slave11Table
-CAMSYNC DD $Slave12Table 0 
-FREECAMTABLE $Slave12Table
+'CAMSYNC AA2 $Slave9Table 0 
+'FREECAMTABLE $Slave9Table
+'CAMSYNC BB2 $Slave10Table 0 
+'FREECAMTABLE $Slave10Table
+'CAMSYNC CC2 $Slave11Table 0 
+'FREECAMTABLE $Slave11Table
+'CAMSYNC DD $Slave12Table 0 
+'FREECAMTABLE $Slave12Table
 
-CAMSYNC xx $Slave13Table 0 
-FREECAMTABLE $Slave13Table
-CAMSYNC yy $Slave14Table 0 
-FREECAMTABLE $Slave14Table
-CAMSYNC zz $Slave15Table 0 
-FREECAMTABLE $Slave15Table
-CAMSYNC uu $Slave16Table 0 
-FREECAMTABLE $Slave16Table
+'CAMSYNC xx $Slave13Table 0 
+'FREECAMTABLE $Slave13Table
+'CAMSYNC yy $Slave14Table 0 
+'FREECAMTABLE $Slave14Table
+'CAMSYNC zz $Slave15Table 0 
+'FREECAMTABLE $Slave15Table
+'CAMSYNC uu $Slave16Table 0 
+'FREECAMTABLE $Slave16Table
 
 END PROGRAM

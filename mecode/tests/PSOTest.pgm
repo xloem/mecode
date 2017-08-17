@@ -1,0 +1,29 @@
+'                      SinglePulseOutput.pgm
+'
+' This sample demonstrates a use of the PSO pulse generator that is not tied to the
+' position of the axis in any way.  The pulse generator is configured and forced to
+' fire a single time.
+
+' NOTE: All PSO samples are written assuming 1000 counts per unit.
+' NOTE: PSO pulse outputs are intentionally long so that the PSO output state can
+'       be easily viewed using the "PSO Status" item in the Digital Scope.
+
+
+' Reset the PSO.
+PSOCONTROL Y RESET
+
+' Uncomment the following line to configure the PSO hardware to send the PSO signal out the
+' auxiliary marker.  If using the dedicated PSO output, this command should not be used.
+' Refer to your drive hardware manual for more information.
+'PSOOUTPUT X CONTROL 0 1
+
+' Configure the pulse generator by setting the pulse on/off times and number of cycles.
+PSOPULSE Y TIME 1000000, 500000 CYCLES 3
+
+' Specify the output of the PSO to come from the pulse generator.
+PSOOUTPUT Y PULSE
+
+' Enable the PSO and force it to fire immediately.
+PSOCONTROL Y FIRE
+
+END PROGRAM 

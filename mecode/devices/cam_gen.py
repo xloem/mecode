@@ -3,45 +3,48 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 class camGen(object):
-    def __init__(self,scan_file_location,start_x,start_y,pitch_x,pitch_y):
-        self.f = np.load(scan_file_location)
+    def __init__(self,scan,start_x,start_y,pitch_x,pitch_y):
+        #self.scan = np.load(scan)
+        self.scan = scan
         self.start_x = start_x
         self.start_y = start_y
         self.pitch_x = pitch_x
         self.pitch_y = pitch_y
         self.axis_names = ['a','b','c','d','XX','YY','ZZ','UU','AA2','BB2','CC2','DD','xxl','yyl','zzl','uul']
 
-    def run(self,x_pos,y_pos):
+    def run(self,x_pos,y_pos,y_length,y_offset):
         #Create plot to show cam pathes
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
-
-        #y_len = len(self.f)*self.pitch_y
-        y_len = 1000*0.3
-        #num_points = len(self.f)-19
-        num_points = 982
+        
+        num_points = int(np.floor(y_length/self.pitch_y)+2)
         preamble = """Number of Points\t{} 
 Master Units\t(PRIMARY) 
 Slave Units\t(PRIMARY)
 """.format(num_points)
+        
         f = dict.fromkeys(self.axis_names)
-        offset = 375.620-366.35
+        #offset = 375.620-366.35
         nozzle_spacing = 2.5
         plot_vals = []
+        initial_pos = []
+        
         for index,axis in enumerate(self.axis_names):
-            f[axis] = open('{}_sine.cam'.format(axis),'w')
+            f[axis] = open('cam/{}_sine.cam'.format(axis),'w')
             f[axis].write(preamble)
             count = 1
             axis_plot_vals = []
-            for y_val in np.arange(y_pos,0.3+y_len,self.pitch_y):
+            for y_val in np.arange(y_pos,y_pos+self.pitch_y+y_length,self.pitch_y):
                 x_val = x_pos+index*nozzle_spacing
                 z_val = self.retrieve(x_val,y_val)
-                f[axis].write('{:04d}\t{:06f}\t{:06f}\n'.format(count,y_val+offset,z_val))
+                f[axis].write('{:04d}\t{:06f}\t{:06f}\n'.format(count,y_val+y_offset,z_val))
                 axis_plot_vals.append([x_val,y_val,z_val])
+                if count == 1:
+                    initial_pos.append(z_val)
                 count += 1
             plot_vals.append(axis_plot_vals)
         f[axis].close()
-        #np.save('plot_vals.npy',np.array(plot_vals))
+
         for index,nozzle in enumerate(np.array(plot_vals)):
             x_vals = nozzle[:,0]
             y_vals = nozzle[:,1]
@@ -50,7 +53,10 @@ Slave Units\t(PRIMARY)
 
         plt.legend()
         plt.title('Generated Camming Profiles')
-        plt.show()
+        #plt.show()
+
+        #Return intial positions for next step
+        return initial_pos
 
     def retrieve(self,x,y):
         x_index = (x-self.start_x)/self.pitch_x
@@ -58,19 +64,19 @@ Slave Units\t(PRIMARY)
 
         if x_index.is_integer() and y_index.is_integer():
             #print "Mode 1"
-            return self.f[int(y_index),int(x_index)]
+            return self.scan[int(y_index),int(x_index)]
 
         elif x_index.is_integer() and not y_index.is_integer():
             #print "Mode 2"
             y_min = np.floor(y_index)
             y_max = np.ceil(y_index)
-            return (y_max-y_index)/1*self.f[int(y_min),int(x_index)]+(y_index-y_min)/1*self.f[int(y_max),int(x_index)]
+            return (y_max-y_index)/1*self.scan[int(y_min),int(x_index)]+(y_index-y_min)/1*self.scan[int(y_max),int(x_index)]
 
         elif y_index.is_integer() and not x_index.is_integer():
             #print "Mode 3"
             x_min = np.floor(x_index)
             x_max = np.ceil(x_index)
-            return (x_max-x_index)/1*self.f[int(y_index),int(x_min)]+(x_index-x_min)/1*self.f[int(y_index),int(x_max)]
+            return (x_max-x_index)/1*self.scan[int(y_index),int(x_min)]+(x_index-x_min)/1*self.scan[int(y_index),int(x_max)]
         
         else:
             #print "Mode 4"
@@ -78,10 +84,10 @@ Slave Units\t(PRIMARY)
             x_max = np.ceil(x_index)
             y_min = np.floor(y_index)
             y_max = np.ceil(y_index)
-            points = [(x_min,y_min,self.f[int(y_min),int(x_min)]),
-                     (x_min,y_max,self.f[int(y_max),int(x_min)]),
-                     (x_max,y_min,self.f[int(y_min),int(x_max)]),
-                     (x_max,y_max,self.f[int(y_max),int(x_max)])]
+            points = [(x_min,y_min,self.scan[int(y_min),int(x_min)]),
+                     (x_min,y_max,self.scan[int(y_max),int(x_min)]),
+                     (x_max,y_min,self.scan[int(y_min),int(x_max)]),
+                     (x_max,y_max,self.scan[int(y_max),int(x_max)])]
             return self.bilinear_interpolation(x_index,y_index,points)
 
     def bilinear_interpolation(self,x, y, points):

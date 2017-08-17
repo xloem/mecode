@@ -1,0 +1,23 @@
+DVAR $pos
+G90
+$pos = 62.23
+
+G1 a$pos F15
+G1 b$pos F15
+G1 c$pos F15
+G1 d$pos F15
+G1 XX$pos F15
+G1 YY$pos F15
+G1 ZZ$pos F15
+G1 UU$pos F15
+G1 AA2$pos F15
+G1 BB2$pos F15
+G1 CC2$pos F15
+G1 DD$pos F15
+G1 xx$pos F15
+G1 yy$pos F15
+G1 zz$pos F15
+G1 uu$pos F15
+
+
+

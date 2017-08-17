@@ -49,6 +49,7 @@ import math
 import os
 from collections import defaultdict
 from devices.keyence_line_scanner import KeyenceLineScanner
+from devices.cam_gen import camGen
 from printer import Printer
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -87,7 +88,7 @@ class G(object):
                  x_axis='X', y_axis='Y', z_axis='Z', extrude=False,
                  filament_diameter=1.75, layer_height=0.19,
                  extrusion_width=0.35, extrusion_multiplier=1, setup=True,
-                 lineend='os',scanner=False):
+                 lineend='os',scanner=False,cam=False):
         """
         Parameters
         ----------
@@ -147,6 +148,10 @@ class G(object):
             Line ending to use when writing to a file or printer. The special
             value 'os' can be passed to fall back on python's automatic
             lineending insertion.
+        scanner : bool (default: False)
+            If True, a keyence line profilometer is initialized over USB.
+        cam : bool (default: False)
+            if True, mecode gains access to the cam generation functionality on Aerotech.
 
         """
         self.outfile = outfile
@@ -806,7 +811,7 @@ class G(object):
     def set_valve(self, num, value):
         self.write('$DO{}.0={}'.format(num, value))
 
-    def scanArea(self,x_start,x_stop, y_start, y_stop, y_step=0.3):
+    def scanArea(self, x_start, x_stop, y_start, y_stop, y_step=0.3,scanning_feed=30):
         start_string="""PSOCONTROL Y RESET
 PSOTRACK Y INPUT 7
 PSODISTANCE Y FIXED ABS(UNITSTOCOUNTS(Y, {}/16))
@@ -835,6 +840,7 @@ PSOCONTROL Y ARM""".format(y_step)
 
         #Move to starting point
         self.absolute()
+        self.feed(scanning_feed)
         self.move(scan_x_start,scan_y_start)
         
         #Start second process for capturing scan data
@@ -854,7 +860,60 @@ PSOCONTROL Y ARM""".format(y_step)
         self.write(stop_string)
         
         #return result.get()
-        return self.scan.processScanResults(result.get(),num_passes,scan_width,scan_trim), x_start, y_start, y_step
+        return self.scan.processScanResults(result.get(),num_passes,scan_width,scan_trim)
+
+    def run_program(self, path):
+        with open(path) as f:
+            for line in f.read().splitlines():
+                self.write(line)
+
+    def cam_demo(self, x_start, x_stop, y_start, y_stop, cam_x_start, cam_y_start, cam_y_length, x_offset, y_offset):
+        #Scan bed
+        scanData = self.scanArea(x_start,x_stop,y_start,y_stop)
+        #Create cam object with scan data
+        cam = camGen(scanData,-0.1,0.3,self.scan.IXPitch,0.3)
+        #Generate cam tables
+        initial_pos = cam.run(cam_x_start,cam_y_start,cam_y_length,y_offset)
+        self.write("""
+DVAR $StartXPosition
+DVAR $MasterStartPosition 
+DVAR $Slave1StartPosition
+DVAR $Slave2StartPosition
+DVAR $Slave3StartPosition
+DVAR $Slave4StartPosition
+DVAR $Slave5StartPosition
+DVAR $Slave6StartPosition
+DVAR $Slave7StartPosition
+DVAR $Slave8StartPosition 
+DVAR $Slave9StartPosition
+DVAR $Slave10StartPosition
+DVAR $Slave11StartPosition
+DVAR $Slave12StartPosition 
+DVAR $Slave13StartPosition
+DVAR $Slave14StartPosition
+DVAR $Slave15StartPosition
+DVAR $Slave16StartPosition 
+$XStartPosition = {}
+$MasterStartPosition = {}
+$MasterMotionRange = {}
+$Slave1StartPosition = {}
+$Slave2StartPosition = {}
+$Slave3StartPosition = {}
+$Slave4StartPosition = {}
+$Slave5StartPosition = {}
+$Slave6StartPosition = {}
+$Slave7StartPosition = {}
+$Slave8StartPosition = {}
+$Slave9StartPosition = {}
+$Slave10StartPosition = {}
+$Slave11StartPosition = {}
+$Slave12StartPosition = {}
+$Slave13StartPosition = {}
+$Slave14StartPosition = {}
+$Slave15StartPosition = {}
+$Slave16StartPosition = {}""".format(cam_x_start+x_offset,cam_y_start+y_offset,cam_y_start+cam_y_length+y_offset,*initial_pos))
+        #Run jog cam setup program
+        self.run_program('cam/camSetup.pgm')
 
     # Public Interface  #######################################################
 
