@@ -49,7 +49,7 @@ import math
 import os
 from collections import defaultdict
 from devices.keyence_line_scanner import KeyenceLineScanner
-from devices.cam_gen import camGen
+from devices.cam_utils import camUtils
 from printer import Printer
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -795,23 +795,92 @@ class G(object):
         ----------
         path : str
             The path specifying the aerotech calibration file.
-
         """
         self.write(r'LOADCALFILE "{}", 2D_CAL'.format(path))
 
     def toggle_pressure(self, com_port):
+        """ Toggles pressure of Nordson EFD Pressure Box.
+
+        Parameters
+        ----------
+        com_port : int
+            The com port for the pressure box (Windows only)
+        """
         self.write('Call togglePress P{}'.format(com_port))
 
     def set_pressure(self, com_port, value):
+        """ Sets pressure of Nordson EFD Pressure Box.
+
+        Parameters
+        ----------
+        com_port : int
+            The com port for the pressure box (Windows only)
+        value : float
+            Pressure to set in PSI
+        """
         self.write('Call setPress P{} Q{}'.format(com_port, value))
 
     def set_vac(self, com_port, value):
+        """ Sets vaccuum pressure of Nordson EFD Pressure Box.
+
+        Parameters
+        ----------
+        com_port : int
+            The com port for the pressure box (Windows only)
+        value : float
+            Vaccuum pressure to set in PSI
+        """
         self.write('Call setVac P{} Q{}'.format(com_port, value))
 
     def set_valve(self, num, value):
+        """ Turns on valves.
+
+        Parameters
+        ----------
+        num : int
+            Valve number
+        value : bool
+            On or Off
+        """
         self.write('$DO{}.0={}'.format(num, value))
 
+    def run_program(self, path):
+        """ Loads and runs a program line by line from file
+
+        Parameters
+        ----------
+        path : str
+            The path specifying the program to run.
+        """
+        with open(path) as f:
+            for line in f.read().splitlines():
+                self.write(line)
+
     def scanArea(self, x_start, x_stop, y_start, y_stop, y_step=0.3,scanning_feed=40):
+        """ Scan an area of the build area. Returns point cloud in the form of numpy array
+
+        Parameters
+        ----------
+        x_start : float
+            The lower left x coordinate of the rectangular scan area
+        x_stop : float
+            The upper right x coordinate of the rectangular scan area
+        y_start : float
+            The lower left y coordinate of the rectangular scan area
+        y_stop : float
+            The upper right y coordinate of the rectangular scan area
+        y_step : float
+            Step size when moving along y during a scan, x is fixed due to laser
+        scanning_feed : float
+            Feedrate to use whule scanning. Seems to be issues with scanning > 50mm/s
+
+        Examples
+        --------
+        >>> # Saving the point cloud for further processing
+        >>> point_cloud = g.scanArea(0,400,0,400)
+        >>> import numpy as np; np.save('point_cloud.npy',point_cloud)
+
+        """
         start_string="""PSOCONTROL Y RESET
 PSOTRACK Y INPUT 7
 PSODISTANCE Y FIXED ABS(UNITSTOCOUNTS(Y, {}/16))
@@ -862,245 +931,92 @@ PSOCONTROL Y ARM""".format(y_step)
         #return result.get()
         return self.scan.processScanResults(result.get(),num_passes,scan_width,scan_trim)
 
-    def run_program(self, path):
-        with open(path) as f:
-            for line in f.read().splitlines():
-                self.write(line)
-
     def cam_demo(self, x_start, x_stop, y_start, y_stop, cam_x_start, cam_y_start, cam_y_length, x_offset, y_offset):
-                #Free cam tables
-        self.write_lines("""
-CAMSYNC a 1 0 
-FREECAMTABLE 1
-CAMSYNC b 2 0 
-FREECAMTABLE 2
-CAMSYNC c 3 0 
-FREECAMTABLE 3
-CAMSYNC d 4 0 
-FREECAMTABLE 4
-CAMSYNC XX 5 0 
-FREECAMTABLE 5
-CAMSYNC YY 6 0 
-FREECAMTABLE 6
-CAMSYNC ZZ 7 0 
-FREECAMTABLE 7
-CAMSYNC UU 8 0 
-FREECAMTABLE 8
-CAMSYNC AA2 9 0 
-FREECAMTABLE 9
-CAMSYNC BB2 10 0 
-FREECAMTABLE 10
-CAMSYNC CC2 11 0 
-FREECAMTABLE 11
-CAMSYNC DD 12 0 
-FREECAMTABLE 12
-CAMSYNC xx 13 0 
-FREECAMTABLE 13
-CAMSYNC yy 14 0 
-FREECAMTABLE 14
-CAMSYNC zz 15 0 
-FREECAMTABLE 15
-CAMSYNC uu 16 0 
-FREECAMTABLE 16""")
+        """ Scans the area of th build area specified and performs two passes over area using
+        cam tables.
+
+        Parameters
+        ----------
+        x_start : float
+            The lower left x coordinate of the rectangular scan area
+        x_stop : float
+            The upper right x coordinate of the rectangular scan area
+        y_start : float
+            The lower left y coordinate of the rectangular scan area
+        y_stop : float
+            The upper right y coordinate of the rectangular scan area
+        cam_x_start : float
+            Starting x location of movemenet over cam line
+        cam_y_start : float
+            Starting y location of movemenet over cam line
+        cam_y_length : float
+            Length of move over cam line
+        x_offset : float
+            X location of the center of the scanner relative to the location of the first nozzle
+        y_offset : float
+            Y location of the center of the scanner relative to the location of the first nozzle
+
+        Examples
+        --------
+        >>> # Typical cam demo 
+        >>> g.cam_demo(0,400,0,400,250,6,250,-212.6265,4.2705)
+        
+        """
+        #Free cam tables
+        self.write_lines(cam.free_tables())
 
         #Move nozzles out of the way during scanning
-        self.absolute()
-        self.write("G1 a{} b{} c{} d{} XX{} YY{} ZZ{} UU{} AA2{} BB2{} CC2{} DD{} xx{} yy{} zz{} uu{}".format(*([61.92]*16)))
+        self.write(cam.move_all_nozzles(61.92))
+        
         #Scan bed
         scanData = self.scanArea(x_start,x_stop,y_start,y_stop)
+        
         #Create cam object with scan data
-        cam = camGen(scanData,-0.1,0.3,self.scan.IXPitch,0.3)
-        #Generate cam tables
-        initial_pos = cam.run(cam_x_start,cam_y_start,cam_y_length,y_offset)
+        cam = camUtils(scanData,-0.1,0.3,self.scan.IXPitch,0.3)
         
-        #Move to start position
-        self.write_lines("""
-PRIMARY
-VELOCITY OFF
-G65 F2000
-G66 F2000
-G90
-G1 F50.0
-G1 X {} Y {} 
-G1 a {} b {} c {} d {} XX {} YY {} ZZ {} UU {} AA2 {} BB2 {} CC2 {} DD {} xx {} yy {} zz {} uu {}""".format(cam_x_start+x_offset,cam_y_start+y_offset,*initial_pos))
-        
-        #Load cam tables
-        self.write_lines("""
-LOADCAMTABLE Y, 1, a, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\a_sine.cam" NOWRAP
-CAMSYNC a 1 1
-LOADCAMTABLE Y, 2, b, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\b_sine.cam" NOWRAP
-CAMSYNC b 2 1
-LOADCAMTABLE Y, 3, c, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\c_sine.cam" NOWRAP
-CAMSYNC c 3 1
-LOADCAMTABLE Y, 4, d, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\d_sine.cam" NOWRAP
-CAMSYNC d 4 1
-LOADCAMTABLE Y, 5, XX, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\XX_sine.cam" NOWRAP
-CAMSYNC XX 5 1
-LOADCAMTABLE Y, 6, YY, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\YY_sine.cam" NOWRAP
-CAMSYNC YY 6 1
-LOADCAMTABLE Y, 7, ZZ, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\ZZ_sine.cam" NOWRAP
-CAMSYNC ZZ 7 1
-LOADCAMTABLE Y, 8, UU, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\UU_sine.cam" NOWRAP
-CAMSYNC UU 8 1
-LOADCAMTABLE Y, 9, AA2, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\AA2_sine.cam" NOWRAP
-CAMSYNC AA2 9 1
-LOADCAMTABLE Y, 10, BB2, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\BB2_sine.cam" NOWRAP
-CAMSYNC BB2 10 1
-LOADCAMTABLE Y, 11, CC2, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\CC2_sine.cam" NOWRAP
-CAMSYNC CC2 11 1
-LOADCAMTABLE Y, 12, DD, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\DD_sine.cam" NOWRAP
-CAMSYNC DD 12 1
-LOADCAMTABLE Y, 13, xx, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\xxl_sine.cam" NOWRAP
-CAMSYNC xx 13 1
-LOADCAMTABLE Y, 14, yy, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\yyl_sine.cam" NOWRAP
-CAMSYNC yy 14 1
-LOADCAMTABLE Y, 15, zz, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\zzl_sine.cam" NOWRAP
-CAMSYNC zz 15 1
-LOADCAMTABLE Y, 16, uu, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\uul_sine.cam" NOWRAP
-CAMSYNC uu 16 1""")
-
-        #Do demo move
+        #Move to 1st position and start print
         self.absolute()
-        self.feed(20)
-        self.move(y=cam_y_start+cam_y_length+y_offset)
-        #self.write("DWELL 2")
-        #self.move(y=cam_y_start+y_offset)
+        self.move(cam_x_start+x_offset,cam_y_start+y_offset)
+        self.multi_nozzle_move(cam_y_length,y_offset)
+
+        #Move to 2nd position and start print
+        self.absolute()
+        self.move(cam_x_start+x_offset+40.0,cam_y_start+y_offset)
+        self.multi_nozzle_move(-cam_y_length,y_offset)
         
+    def multi_nozzle_move(self, y, y_offset):
+        """ Move the multi-nozzle tool head to the given position. This method 
+        operates in relative mode unless a manual call to `absolute` was given previously.
+
+        Examples
+        --------
+        >>> # move the tool head 250mm in y
+        >>> g.multi_nozzle_move(y=250)
+
+        """
+        #Generate cam tables
+        if y > 0:
+            initial_pos = cam.gen_tables(self.current_position['x'],self.current_position['y'],abs(y),y_offset)
+        else:
+            initial_pos = cam.gen_tables(self.current_position['x'],y+self.current_position['y'],abs(y),y_offset,start=False)
+        
+        #Move nozzles to initial pos
+        self.write(cam.move_all_nozzles(initial_pos))
+
+        #Load cam tables
+        self.write_lines(cam.load_tables())
+
+        #Perform move
+        self.relative()
+        self._update_current_position(y=y)
+        self.move(y=y)
+
         #Free cam tables
-        self.write_lines("""
-CAMSYNC a 1 0 
-FREECAMTABLE 1
-CAMSYNC b 2 0 
-FREECAMTABLE 2
-CAMSYNC c 3 0 
-FREECAMTABLE 3
-CAMSYNC d 4 0 
-FREECAMTABLE 4
-CAMSYNC XX 5 0 
-FREECAMTABLE 5
-CAMSYNC YY 6 0 
-FREECAMTABLE 6
-CAMSYNC ZZ 7 0 
-FREECAMTABLE 7
-CAMSYNC UU 8 0 
-FREECAMTABLE 8
-CAMSYNC AA2 9 0 
-FREECAMTABLE 9
-CAMSYNC BB2 10 0 
-FREECAMTABLE 10
-CAMSYNC CC2 11 0 
-FREECAMTABLE 11
-CAMSYNC DD 12 0 
-FREECAMTABLE 12
-CAMSYNC xx 13 0 
-FREECAMTABLE 13
-CAMSYNC yy 14 0 
-FREECAMTABLE 14
-CAMSYNC zz 15 0 
-FREECAMTABLE 15
-CAMSYNC uu 16 0 
-FREECAMTABLE 16""")
+        self.write_lines(cam.free_tables())
 
         #Move nozzles out of the way at the end.
-        self.absolute()
-        self.write("G1 a{} b{} c{} d{} XX{} YY{} ZZ{} UU{} AA2{} BB2{} CC2{} DD{} xx{} yy{} zz{} uu{}".format(*([61.92]*16)))
-########SECOND PASS############
-        cam_x_start += 40.0
-        #Generate cam tables
-        initial_pos = cam.run(cam_x_start,cam_y_start,cam_y_length,y_offset,start=False)
-        
-        #Move to start position
-        self.write_lines("""
-PRIMARY
-VELOCITY OFF
-G65 F2000
-G66 F2000
-G90
-G1 F50.0
-G1 X {} Y {} 
-G1 a {} b {} c {} d {} XX {} YY {} ZZ {} UU {} AA2 {} BB2 {} CC2 {} DD {} xx {} yy {} zz {} uu {}""".format(cam_x_start+x_offset,cam_y_start+y_offset+cam_y_length,*initial_pos))
-        
-        #Load cam tables
-        self.write_lines("""
-LOADCAMTABLE Y, 1, a, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\a_sine.cam" NOWRAP
-CAMSYNC a 1 1
-LOADCAMTABLE Y, 2, b, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\b_sine.cam" NOWRAP
-CAMSYNC b 2 1
-LOADCAMTABLE Y, 3, c, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\c_sine.cam" NOWRAP
-CAMSYNC c 3 1
-LOADCAMTABLE Y, 4, d, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\d_sine.cam" NOWRAP
-CAMSYNC d 4 1
-LOADCAMTABLE Y, 5, XX, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\XX_sine.cam" NOWRAP
-CAMSYNC XX 5 1
-LOADCAMTABLE Y, 6, YY, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\YY_sine.cam" NOWRAP
-CAMSYNC YY 6 1
-LOADCAMTABLE Y, 7, ZZ, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\ZZ_sine.cam" NOWRAP
-CAMSYNC ZZ 7 1
-LOADCAMTABLE Y, 8, UU, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\UU_sine.cam" NOWRAP
-CAMSYNC UU 8 1
-LOADCAMTABLE Y, 9, AA2, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\AA2_sine.cam" NOWRAP
-CAMSYNC AA2 9 1
-LOADCAMTABLE Y, 10, BB2, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\BB2_sine.cam" NOWRAP
-CAMSYNC BB2 10 1
-LOADCAMTABLE Y, 11, CC2, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\CC2_sine.cam" NOWRAP
-CAMSYNC CC2 11 1
-LOADCAMTABLE Y, 12, DD, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\DD_sine.cam" NOWRAP
-CAMSYNC DD 12 1
-LOADCAMTABLE Y, 13, xx, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\xxl_sine.cam" NOWRAP
-CAMSYNC xx 13 1
-LOADCAMTABLE Y, 14, yy, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\yyl_sine.cam" NOWRAP
-CAMSYNC yy 14 1
-LOADCAMTABLE Y, 15, zz, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\zzl_sine.cam" NOWRAP
-CAMSYNC zz 15 1
-LOADCAMTABLE Y, 16, uu, 1, 1, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\uul_sine.cam" NOWRAP
-CAMSYNC uu 16 1""")
-
-        #Do demo move
-        self.absolute()
-        self.feed(20)
-        self.move(y=cam_y_start+y_offset)
-        #self.write("DWELL 2")
-        #self.move(y=cam_y_start+y_offset)
-        
-        #Free cam tables
-        self.write_lines("""
-CAMSYNC a 1 0 
-FREECAMTABLE 1
-CAMSYNC b 2 0 
-FREECAMTABLE 2
-CAMSYNC c 3 0 
-FREECAMTABLE 3
-CAMSYNC d 4 0 
-FREECAMTABLE 4
-CAMSYNC XX 5 0 
-FREECAMTABLE 5
-CAMSYNC YY 6 0 
-FREECAMTABLE 6
-CAMSYNC ZZ 7 0 
-FREECAMTABLE 7
-CAMSYNC UU 8 0 
-FREECAMTABLE 8
-CAMSYNC AA2 9 0 
-FREECAMTABLE 9
-CAMSYNC BB2 10 0 
-FREECAMTABLE 10
-CAMSYNC CC2 11 0 
-FREECAMTABLE 11
-CAMSYNC DD 12 0 
-FREECAMTABLE 12
-CAMSYNC xx 13 0 
-FREECAMTABLE 13
-CAMSYNC yy 14 0 
-FREECAMTABLE 14
-CAMSYNC zz 15 0 
-FREECAMTABLE 15
-CAMSYNC uu 16 0 
-FREECAMTABLE 16""")
-
-        #Move nozzles out of the way at the end.
-        self.absolute()
-        self.write("G1 a{} b{} c{} d{} XX{} YY{} ZZ{} UU{} AA2{} BB2{} CC2{} DD{} xx{} yy{} zz{} uu{}".format(*([61.92]*16)))
-
+        self.write(cam.move_all_nozzles(61.92))
+    
     # Public Interface  #######################################################
 
     def view(self, backend='mayavi'):
@@ -1287,4 +1203,3 @@ FREECAMTABLE 16""")
         if (len(self.speed_history) == 0
             or self.speed_history[-1][1] != self.speed):
             self.speed_history.append((len_history - 1, self.speed))
-

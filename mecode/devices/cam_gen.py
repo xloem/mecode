@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-class camGen(object):
+class cam(object):
     def __init__(self,scan,start_x,start_y,pitch_x,pitch_y):
         #self.scan = np.load(scan)
         self.scan = scan
@@ -10,9 +10,33 @@ class camGen(object):
         self.start_y = start_y
         self.pitch_x = pitch_x
         self.pitch_y = pitch_y
-        self.axis_names = ['a','b','c','d','XX','YY','ZZ','UU','AA2','BB2','CC2','DD','xxl','yyl','zzl','uul']
+        self.axis_file_names = ['a','b','c','d','XX','YY','ZZ','UU','AA2','BB2','CC2','DD','xxl','yyl','zzl','uul']
+        self.axis_names = ['a','b','c','d','XX','YY','ZZ','UU','AA2','BB2','CC2','DD','xx','yy','zz','uu']
 
-    def run(self,x_pos,y_pos,y_length,y_offset,start=True):
+    def free_tables(self):
+        msg = ""
+        for index, axis in enumerate(axis_names):
+            msg += "CAMSYNC {} {} 0\nFREECAMTABLE {}\n".format(axis,index+1,index+1)
+        return msg
+
+    def load_tables(self):
+        msg = ""
+        interpolation_mode = 1
+        tracking_mode = 1
+        sync_mode = 1
+        for index in range(len(axis_names)):
+            msg += 'LOADCAMTABLE Y, {}, {}, {}, {}, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\{}_sine.cam' 
+                'NOWRAP\nCAMSYNC {} {} {}\n'.format(index+1,axis_names[index],interpolation_mode,tracking_mode,
+                    axis_file_names[index],axis_names[index],index+1,sync_mode)
+        return msg
+
+    def move_all_nozzles(self,position):
+        if type(position) == type([]):
+            return "G90 G1 a{} b{} c{} d{} XX{} YY{} ZZ{} UU{} AA2{} BB2{} CC2{} DD{} xx{} yy{} zz{} uu{}".format(*position)
+        else:
+            return "G90 G1 a{} b{} c{} d{} XX{} YY{} ZZ{} UU{} AA2{} BB2{} CC2{} DD{} xx{} yy{} zz{} uu{}".format(*([position]*16))
+
+    def gen_tables(self,x_pos,y_pos,y_length,y_offset,start=True):
         #Create plot to show cam pathes
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
@@ -23,13 +47,13 @@ Master Units\t(PRIMARY)
 Slave Units\t(PRIMARY)
 """.format(num_points)
         
-        f = dict.fromkeys(self.axis_names)
+        f = dict.fromkeys(self.axis_file_names)
         #offset = 375.620-366.35
         nozzle_spacing = 2.5
         plot_vals = []
         initial_pos = []
         
-        for index,axis in enumerate(self.axis_names):
+        for index,axis in enumerate(self.axis_file_names):
             f[axis] = open('cam/{}_sine.cam'.format(axis),'w')
             f[axis].write(preamble)
             count = 1
@@ -51,7 +75,7 @@ Slave Units\t(PRIMARY)
             x_vals = nozzle[:,0]
             y_vals = nozzle[:,1]
             z_vals = nozzle[:,2]
-            ax.plot(x_vals,y_vals,z_vals,label= self.axis_names[index])
+            ax.plot(x_vals,y_vals,z_vals,label= self.axis_file_names[index])
 
         plt.legend()
         plt.title('Generated Camming Profiles')

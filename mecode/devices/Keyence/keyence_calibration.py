@@ -4,12 +4,12 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import cv2
 
-scan = np.load('calibration_verification.npy')
+scan = np.load('cal_scan.npy')
 gradX, gradY = np.nan_to_num(np.gradient(scan)) #[0]:X [1]:Y
 sides = [np.copy(gradX),np.copy(gradX),np.copy(gradY),np.copy(gradY)]
 
 #Key parameters
-fit = 0.03
+fit = 0.02
 canny = [250,375]
 angle = [0.3,0.5]
 
@@ -82,7 +82,7 @@ for index, side in enumerate(sides):
 	
 	side = np.uint8(side*255)
 	
-	if index in [1,2,3]:
+	if index in [0,1,2]:
 	#if index in [1]:
 		gray = cv2.GaussianBlur(side,(9,9),0)
 		#gray = cv2.bilateralFilter(blur,7,650,1750)
