@@ -12,7 +12,7 @@ class camGen(object):
         self.pitch_y = pitch_y
         self.axis_names = ['a','b','c','d','XX','YY','ZZ','UU','AA2','BB2','CC2','DD','xxl','yyl','zzl','uul']
 
-    def run(self,x_pos,y_pos,y_length,y_offset):
+    def run(self,x_pos,y_pos,y_length,y_offset,start=True):
         #Create plot to show cam pathes
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
@@ -39,7 +39,9 @@ Slave Units\t(PRIMARY)
                 z_val = self.retrieve(x_val,y_val)
                 f[axis].write('{:04d}\t{:06f}\t{:06f}\n'.format(count,y_val+y_offset,z_val))
                 axis_plot_vals.append([x_val,y_val,z_val])
-                if count == 1:
+                if count == 1 and start:
+                    initial_pos.append(z_val)
+                elif count == len(np.arange(y_pos,y_pos+self.pitch_y+y_length,self.pitch_y)) and not start:
                     initial_pos.append(z_val)
                 count += 1
             plot_vals.append(axis_plot_vals)

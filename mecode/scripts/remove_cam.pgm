@@ -1,0 +1,73 @@
+DVAR $Slave1Table
+DVAR $Slave2Table
+DVAR $Slave3Table
+DVAR $Slave4Table
+DVAR $Slave5Table
+DVAR $Slave6Table
+DVAR $Slave7Table
+DVAR $Slave8Table
+DVAR $Slave9Table
+DVAR $Slave10Table
+DVAR $Slave11Table
+DVAR $Slave12Table
+DVAR $Slave13Table
+DVAR $Slave14Table
+DVAR $Slave15Table
+DVAR $Slave16Table
+
+' Specify table number. Up to 99 tables allowed. 
+$Slave1Table = 1
+$Slave2Table = 2
+$Slave3Table = 3
+$Slave4Table = 4
+$Slave5Table = 5
+$Slave6Table = 6
+$Slave7Table = 7
+$Slave8Table = 8
+$Slave9Table = 9
+$Slave10Table = 10
+$Slave11Table = 11
+$Slave12Table = 12
+$Slave13Table = 13
+$Slave14Table = 14
+$Slave15Table = 15
+$Slave16Table = 16
+
+' Turn off camming (if it was on)
+CAMSYNC a $Slave1Table 0 
+FREECAMTABLE $Slave1Table
+CAMSYNC b $Slave2Table 0 
+FREECAMTABLE $Slave2Table
+CAMSYNC c $Slave3Table 0 
+FREECAMTABLE $Slave3Table
+CAMSYNC d $Slave4Table 0 
+FREECAMTABLE $Slave4Table
+
+CAMSYNC XX $Slave5Table 0 
+FREECAMTABLE $Slave5Table
+CAMSYNC YY $Slave6Table 0 
+FREECAMTABLE $Slave6Table
+CAMSYNC ZZ $Slave7Table 0 
+FREECAMTABLE $Slave7Table
+CAMSYNC UU $Slave8Table 0 
+FREECAMTABLE $Slave8Table
+
+CAMSYNC AA2 $Slave9Table 0 
+FREECAMTABLE $Slave9Table
+CAMSYNC BB2 $Slave10Table 0 
+FREECAMTABLE $Slave10Table
+CAMSYNC CC2 $Slave11Table 0 
+FREECAMTABLE $Slave11Table
+CAMSYNC DD $Slave12Table 0 
+FREECAMTABLE $Slave12Table
+
+CAMSYNC xx $Slave13Table 0 
+FREECAMTABLE $Slave13Table
+CAMSYNC yy $Slave14Table 0 
+FREECAMTABLE $Slave14Table
+CAMSYNC zz $Slave15Table 0 
+FREECAMTABLE $Slave15Table
+CAMSYNC uu $Slave16Table 0 
+FREECAMTABLE $Slave16Table
+
+END PROGRAM
