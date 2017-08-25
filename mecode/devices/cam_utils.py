@@ -1,8 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import sys
 
-class cam(object):
+class camUtils(object):
     def __init__(self,scan,start_x,start_y,pitch_x,pitch_y):
         #self.scan = np.load(scan)
         self.scan = scan
@@ -15,7 +16,7 @@ class cam(object):
 
     def free_tables(self):
         msg = ""
-        for index, axis in enumerate(axis_names):
+        for index, axis in enumerate(self.axis_names):
             msg += "CAMSYNC {} {} 0\nFREECAMTABLE {}\n".format(axis,index+1,index+1)
         return msg
 
@@ -24,10 +25,9 @@ class cam(object):
         interpolation_mode = 1
         tracking_mode = 1
         sync_mode = 1
-        for index in range(len(axis_names)):
-            msg += 'LOADCAMTABLE Y, {}, {}, {}, {}, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\{}_sine.cam' 
-                'NOWRAP\nCAMSYNC {} {} {}\n'.format(index+1,axis_names[index],interpolation_mode,tracking_mode,
-                    axis_file_names[index],axis_names[index],index+1,sync_mode)
+        for index in range(len(self.axis_names)):
+            msg += 'LOADCAMTABLE Y, {}, {}, {}, {}, "Z:\\User Files\\Rob\\Github\\mecode\\mecode\\cam\\{}_sine.cam" NOWRAP\nCAMSYNC {} {} {}\n'.format(index+1,self.axis_names[index],interpolation_mode,tracking_mode,
+                    self.axis_file_names[index],self.axis_names[index],index+1,sync_mode)
         return msg
 
     def move_all_nozzles(self,position):
@@ -79,8 +79,15 @@ Slave Units\t(PRIMARY)
 
         plt.legend()
         plt.title('Generated Camming Profiles')
-        #plt.show()
+        plt.show()
+        fig.savefig('cam/cam_profiles.png')
 
+
+        #Verify that the profile looks good (safety check)
+        response = raw_input('Continue? (Y/N)\n')
+        if response.capitalize() == 'N':
+            sys.exit()
+        
         #Return intial positions for next step
         return initial_pos
 
@@ -88,33 +95,37 @@ Slave Units\t(PRIMARY)
         x_index = (x-self.start_x)/self.pitch_x
         y_index = (y-self.start_y)/self.pitch_y
 
-        if x_index.is_integer() and y_index.is_integer():
-            #print "Mode 1"
-            return self.scan[int(y_index),int(x_index)]
+        try:
+            if x_index.is_integer() and y_index.is_integer():
+                #print "Mode 1"
+                return self.scan[int(y_index),int(x_index)]
 
-        elif x_index.is_integer() and not y_index.is_integer():
-            #print "Mode 2"
-            y_min = np.floor(y_index)
-            y_max = np.ceil(y_index)
-            return (y_max-y_index)/1*self.scan[int(y_min),int(x_index)]+(y_index-y_min)/1*self.scan[int(y_max),int(x_index)]
+            elif x_index.is_integer() and not y_index.is_integer():
+                #print "Mode 2"
+                y_min = np.floor(y_index)
+                y_max = np.ceil(y_index)
+                return (y_max-y_index)/1*self.scan[int(y_min),int(x_index)]+(y_index-y_min)/1*self.scan[int(y_max),int(x_index)]
 
-        elif y_index.is_integer() and not x_index.is_integer():
-            #print "Mode 3"
-            x_min = np.floor(x_index)
-            x_max = np.ceil(x_index)
-            return (x_max-x_index)/1*self.scan[int(y_index),int(x_min)]+(x_index-x_min)/1*self.scan[int(y_index),int(x_max)]
-        
-        else:
-            #print "Mode 4"
-            x_min = np.floor(x_index)
-            x_max = np.ceil(x_index)
-            y_min = np.floor(y_index)
-            y_max = np.ceil(y_index)
-            points = [(x_min,y_min,self.scan[int(y_min),int(x_min)]),
-                     (x_min,y_max,self.scan[int(y_max),int(x_min)]),
-                     (x_max,y_min,self.scan[int(y_min),int(x_max)]),
-                     (x_max,y_max,self.scan[int(y_max),int(x_max)])]
-            return self.bilinear_interpolation(x_index,y_index,points)
+            elif y_index.is_integer() and not x_index.is_integer():
+                #print "Mode 3"
+                x_min = np.floor(x_index)
+                x_max = np.ceil(x_index)
+                return (x_max-x_index)/1*self.scan[int(y_index),int(x_min)]+(x_index-x_min)/1*self.scan[int(y_index),int(x_max)]
+            
+            else:
+                #print "Mode 4"
+                x_min = np.floor(x_index)
+                x_max = np.ceil(x_index)
+                y_min = np.floor(y_index)
+                y_max = np.ceil(y_index)
+                points = [(x_min,y_min,self.scan[int(y_min),int(x_min)]),
+                         (x_min,y_max,self.scan[int(y_max),int(x_min)]),
+                         (x_max,y_min,self.scan[int(y_min),int(x_max)]),
+                         (x_max,y_max,self.scan[int(y_max),int(x_max)])]
+                return self.bilinear_interpolation(x_index,y_index,points)
+
+        except IndexError:
+            print "x: {}\ny: {}\nx_index: {}\ny_index: {}".format(x,y,x_index,y_index)
 
     def bilinear_interpolation(self,x, y, points):
         '''Interpolate (x,y) from values associated with four points.

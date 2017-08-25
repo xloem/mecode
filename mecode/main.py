@@ -932,7 +932,7 @@ PSOCONTROL Y ARM""".format(y_step)
         return self.scan.processScanResults(result.get(),num_passes,scan_width,scan_trim)
 
     def cam_demo(self, x_start, x_stop, y_start, y_stop, cam_x_start, cam_y_start, cam_y_length, x_offset, y_offset):
-        """ Scans the area of th build area specified and performs two passes over area using
+        """ Scans the area of the build area specified and performs two passes over area using
         cam tables.
 
         Parameters
@@ -963,28 +963,35 @@ PSOCONTROL Y ARM""".format(y_step)
         
         """
         #Free cam tables
-        self.write_lines(cam.free_tables())
+        #self.write_lines(cam.free_tables())
 
         #Move nozzles out of the way during scanning
-        self.write(cam.move_all_nozzles(61.92))
+        self.absolute()
+        #self.write(cam.move_all_nozzles(61.92))
         
         #Scan bed
         scanData = self.scanArea(x_start,x_stop,y_start,y_stop)
         
         #Create cam object with scan data
-        cam = camUtils(scanData,-0.1,0.3,self.scan.IXPitch,0.3)
+        self.cam = camUtils(scanData,-0.1,0.3,self.scan.IXPitch,0.3)
         
+        """
         #Move to 1st position and start print
         self.absolute()
         self.move(cam_x_start+x_offset,cam_y_start+y_offset)
-        self.multi_nozzle_move(cam_y_length,y_offset)
+        self.multi_nozzle_move(cam_y_length,x_offset,y_offset)
 
         #Move to 2nd position and start print
         self.absolute()
-        self.move(cam_x_start+x_offset+40.0,cam_y_start+y_offset)
-        self.multi_nozzle_move(-cam_y_length,y_offset)
+        self.move(cam_x_start+x_offset+40.0,cam_y_start+y_offset+cam_y_length)
+        self.multi_nozzle_move(-cam_y_length,x_offset,y_offset)
+        """
+
+        self.absolute()
+        self.move(cam_x_start+x_offset,cam_y_start+y_offset)
+        self.multi_nozzle_meander(120,cam_y_length,x_offset,y_offset)
         
-    def multi_nozzle_move(self, y, y_offset):
+    def multi_nozzle_move(self, y, x_offset, y_offset):
         """ Move the multi-nozzle tool head to the given position. This method 
         operates in relative mode unless a manual call to `absolute` was given previously.
 
@@ -995,27 +1002,106 @@ PSOCONTROL Y ARM""".format(y_step)
 
         """
         #Generate cam tables
+        print "multi_nozzle_move y: {}".format(y)
+        print "Current_position_y: {}".format(self.current_position['y'])
         if y > 0:
-            initial_pos = cam.gen_tables(self.current_position['x'],self.current_position['y'],abs(y),y_offset)
+            initial_pos = self.cam.gen_tables(self.current_position['x']-x_offset,self.current_position['y']-y_offset,abs(y),y_offset)
         else:
-            initial_pos = cam.gen_tables(self.current_position['x'],y+self.current_position['y'],abs(y),y_offset,start=False)
+            initial_pos = self.cam.gen_tables(self.current_position['x']-x_offset,y+self.current_position['y']-y_offset,abs(y),y_offset,start=False)
         
         #Move nozzles to initial pos
-        self.write(cam.move_all_nozzles(initial_pos))
+        self.absolute()
+        self.write(self.cam.move_all_nozzles(initial_pos))
 
         #Load cam tables
-        self.write_lines(cam.load_tables())
+        self.write_lines(self.cam.load_tables())
 
         #Perform move
         self.relative()
-        self._update_current_position(y=y)
         self.move(y=y)
 
         #Free cam tables
-        self.write_lines(cam.free_tables())
+        self.write_lines(self.cam.free_tables())
 
         #Move nozzles out of the way at the end.
-        self.write(cam.move_all_nozzles(61.92))
+        self.absolute()
+        self.write(self.cam.move_all_nozzles(61.92))
+
+    def multi_nozzle_meander(self, x, y, x_offset,y_offset, spacing=40, start='LL', orientation='y', tail=False,
+                minor_feed=None):
+        """ Infill a rectangle with a square wave meandering pattern. If the
+        relevant dimension is not a multiple of the spacing, the spacing will
+        be tweaked to ensure the dimensions work out.
+
+        Parameters
+        ----------
+        x : float
+            The width of the rectangle in the x dimension.
+        y : float
+            The height of the rectangle in the y dimension.
+        spacing : float
+            The space between parallel meander lines.
+        start : str (either 'LL', 'UL', 'LR', 'UR') (default: 'LL')
+            The start of the meander -  L/U = lower/upper, L/R = left/right
+            This assumes an origin in the lower left.
+        orientation : str ('x' or 'y') (default: 'x')
+        tail : Bool (default: False)
+            Whether or not to terminate the meander in the minor axis
+        minor_feed : float or None (default: None)
+            Feed rate to use in the minor axis
+
+        Examples
+        --------
+        >>> # meander through a 10x10 sqaure with a spacing of 1mm starting in
+        >>> # the lower left.
+        >>> g.meander(10, 10, 1)
+
+        >>> # 3x5 meander with a spacing of 1 and with parallel lines through y
+        >>> g.meander(3, 5, spacing=1, orientation='y')
+
+        >>> # 10x5 meander with a spacing of 2 starting in the upper right.
+        >>> g.meander(10, 5, 2, start='UR')
+
+        """
+        if start.upper() == 'UL':
+            x, y = x, -y
+        elif start.upper() == 'UR':
+            x, y = -x, -y
+        elif start.upper() == 'LR':
+            x, y = -x, y
+
+        # Major axis is the parallel lines, minor axis is the jog.
+        if orientation == 'x':
+            major, major_name = x, 'x'
+            minor, minor_name = y, 'y'
+        else:
+            major, major_name = y, 'y'
+            minor, minor_name = x, 'x'
+
+        """
+        actual_spacing = self._meander_spacing(minor, spacing)
+        if abs(actual_spacing) != spacing:
+            msg = ';WARNING! meander spacing updated from {} to {}'
+            self.write(msg.format(spacing, actual_spacing))
+        spacing = actual_spacing
+        """
+        sign = 1
+
+        major_feed = self.speed
+        if not minor_feed:
+            minor_feed = self.speed
+        for _ in range(int(self._meander_passes(minor, spacing))):
+            self.multi_nozzle_move(sign*major,x_offset,y_offset)
+            if minor_feed != major_feed:
+                self.feed(minor_feed)
+            self.relative()
+            self.move(**{minor_name: spacing})
+            if minor_feed != major_feed:
+                self.feed(major_feed)
+            sign = -1 * sign
+        if tail is False:
+            sself.multi_nozzle_move(sign*major,x_offset,y_offset)
+
     
     # Public Interface  #######################################################
 
