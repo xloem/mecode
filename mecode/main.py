@@ -1100,7 +1100,7 @@ PSOCONTROL Y ARM""".format(y_step)
                 self.feed(major_feed)
             sign = -1 * sign
         if tail is False:
-            sself.multi_nozzle_move(sign*major,x_offset,y_offset)
+            self.multi_nozzle_move(sign*major,x_offset,y_offset)
 
     
     # Public Interface  #######################################################
