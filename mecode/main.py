@@ -856,7 +856,7 @@ class G(object):
             for line in f.read().splitlines():
                 self.write(line)
 
-    def scanArea(self, x_start, x_stop, y_start, y_stop, y_step=0.3,scanning_feed=40):
+    def scan_area(self, x_start, x_stop, y_start, y_stop, y_step=0.3,scanning_feed=40):
         """ Scan an area of the build area. Returns point cloud in the form of numpy array
 
         Parameters
@@ -877,7 +877,7 @@ class G(object):
         Examples
         --------
         >>> # Saving the point cloud for further processing
-        >>> point_cloud = g.scanArea(0,400,0,400)
+        >>> point_cloud = g.scan_area(0,400,0,400)
         >>> import numpy as np; np.save('point_cloud.npy',point_cloud)
 
         """
@@ -928,29 +928,21 @@ PSOCONTROL Y ARM""".format(y_step)
             self.move(y=scan_y_length)
         self.write(stop_string)
         
-        #return result.get()
         return self.scan.processScanResults(result.get(),num_passes,scan_width,scan_trim)
 
-    def cam_demo(self, x_start, x_stop, y_start, y_stop, cam_x_start, cam_y_start, cam_y_length, x_offset, y_offset):
-        """ Scans the area of the build area specified and performs two passes over area using
-        cam tables.
+    def print_layer(self, x_start, y_start, num_passes, y_length, x_offset, y_offset):
+        """ Scans the area of the build area specified and prints a single layer.
 
         Parameters
         ----------
         x_start : float
-            The lower left x coordinate of the rectangular scan area
+            The lower left x coordinate of the layer
         x_stop : float
-            The upper right x coordinate of the rectangular scan area
-        y_start : float
-            The lower left y coordinate of the rectangular scan area
-        y_stop : float
-            The upper right y coordinate of the rectangular scan area
-        cam_x_start : float
-            Starting x location of movemenet over cam line
-        cam_y_start : float
-            Starting y location of movemenet over cam line
+            The upper right x coordinate of the layer
+        num_passes : int
+            The number of passes within the meander to form the layer
         cam_y_length : float
-            Length of move over cam line
+            The length of each passes forming the layer
         x_offset : float
             X location of the center of the scanner relative to the location of the first nozzle
         y_offset : float
@@ -958,38 +950,33 @@ PSOCONTROL Y ARM""".format(y_step)
 
         Examples
         --------
-        >>> # Typical cam demo 
-        >>> g.cam_demo(0,400,0,400,250,6,250,-212.6265,4.2705)
+        >>> # Typical print_layer
+        >>> g.print_layer(250,6,200,-212.6265,4.2705)
         
         """
+        #Check if in printing area
+        if x_start < abs(x_offset) or y_start < abs(y_offset):
+            raise ValueError("Out of reachable printing range, reconfigure.")
+
         #Free cam tables
-        #self.write_lines(cam.free_tables())
+        self.write_lines(cam.free_tables())
 
         #Move nozzles out of the way during scanning
         self.absolute()
-        #self.write(cam.move_all_nozzles(61.92))
+        self.write(cam.move_all_nozzles(61.92))
         
         #Scan bed
-        scanData = self.scanArea(x_start,x_stop,y_start,y_stop)
+        scanData = self.scan_area(x_start,x_start+40*num+passes,y_start,y_start+y_length)
         
         #Create cam object with scan data
-        self.cam = camUtils(scanData,-0.1,0.3,self.scan.IXPitch,0.3)
-        
-        """
-        #Move to 1st position and start print
-        self.absolute()
-        self.move(cam_x_start+x_offset,cam_y_start+y_offset)
-        self.multi_nozzle_move(cam_y_length,x_offset,y_offset)
+        self.cam = camUtils(scanData,x_start-0.1,y_start+0.3,self.scan.IXPitch,0.3)
 
-        #Move to 2nd position and start print
+        #Move to starting position
         self.absolute()
-        self.move(cam_x_start+x_offset+40.0,cam_y_start+y_offset+cam_y_length)
-        self.multi_nozzle_move(-cam_y_length,x_offset,y_offset)
-        """
+        self.move(x_start+x_offset,y_start+y_offset)
 
-        self.absolute()
-        self.move(cam_x_start+x_offset,cam_y_start+y_offset)
-        self.multi_nozzle_meander(120,cam_y_length,x_offset,y_offset)
+        #Start printing meander
+        self.multi_nozzle_meander(40*num_passes,_length,x_offset,y_offset)
         
     def multi_nozzle_move(self, y, x_offset, y_offset):
         """ Move the multi-nozzle tool head to the given position. This method 
@@ -1002,8 +989,6 @@ PSOCONTROL Y ARM""".format(y_step)
 
         """
         #Generate cam tables
-        print "multi_nozzle_move y: {}".format(y)
-        print "Current_position_y: {}".format(self.current_position['y'])
         if y > 0:
             initial_pos = self.cam.gen_tables(self.current_position['x']-x_offset,self.current_position['y']-y_offset,abs(y),y_offset)
         else:
