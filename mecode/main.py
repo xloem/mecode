@@ -88,7 +88,7 @@ class G(object):
                  x_axis='X', y_axis='Y', z_axis='Z', extrude=False,
                  filament_diameter=1.75, layer_height=0.19,
                  extrusion_width=0.35, extrusion_multiplier=1, setup=True,
-                 lineend='os',scanner=True):
+                 lineend='os',scanner=True,direct_presure_box=True):
         """
         Parameters
         ----------
@@ -150,8 +150,9 @@ class G(object):
             lineending insertion.
         scanner : bool (default: False)
             If True, a keyence line profilometer is initialized over USB.
-        cam : bool (default: False)
-            if True, mecode gains access to the cam generation functionality on Aerotech.
+        direct_pressure_box : bool (default: True)?
+            When running in direct-write mode, the code should use direct serial commands
+            to the pressure box instead of passing through the aerotech.
 
         """
         self.outfile = outfile
@@ -206,7 +207,7 @@ class G(object):
         #Setup scanning
         if scanner:
             self.scan = KeyenceLineScanner()
-
+           
         if setup:
             self.setup()
 
@@ -806,7 +807,13 @@ class G(object):
         com_port : int
             The com port for the pressure box (Windows only)
         """
-        self.write('Call togglePress P{}'.format(com_port))
+        if not self.direct_write:
+            self.write('Call togglePress P{}'.format(com_port))
+
+        else:
+            from devices.efd_pressure_box import EFDPressureBox
+            pressure_box = EFDPressureBox('COM{}'.format(com_port))
+            pressure_box.toggle_pressure()
 
     def set_pressure(self, com_port, value):
         """ Sets pressure of Nordson EFD Pressure Box.
@@ -818,7 +825,13 @@ class G(object):
         value : float
             Pressure to set in PSI
         """
-        self.write('Call setPress P{} Q{}'.format(com_port, value))
+        if not self.direct_write:
+            self.write('Call setPress P{} Q{}'.format(com_port, value))
+
+        else:
+            from devices.efd_pressure_box import EFDPressureBox
+            pressure_box = EFDPressureBox('COM{}'.format(com_port))
+            pressure_box.set_pressure(value)
 
     def set_vac(self, com_port, value):
         """ Sets vaccuum pressure of Nordson EFD Pressure Box.
