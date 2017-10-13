@@ -869,6 +869,39 @@ class G(object):
             for line in f.read().splitlines():
                 self.write(line)
 
+    def scan_strip(self, width, length):
+        """ Scans along a line of printed filament. Used for ML experiments.
+
+        Parameters
+        ----------
+        width : float
+            Width of scanning strip, measured from the center.
+        length : float
+            Length of scanning strip  
+        """
+        x_step = 0.05
+        start_string="""PSOCONTROL X RESET
+PSOTRACK X INPUT 6
+PSODISTANCE X FIXED ABS(UNITSTOCOUNTS(Y, {}/16))
+PSOPULSE X TIME 100, 100
+PSOOUTPUT X PULSE
+PSOCONTROL X ARM""".format(x_step)
+        stop_string = "PSOCONTROL Y OFF"
+
+        #Start second process for capturing scan data
+        profile_count = int(math.floor(length/x_step))
+        print profile_count
+        from multiprocessing.pool import ThreadPool
+        pool = ThreadPool(processes=1)
+        result = pool.apply_async(self.scan.continuous_get_profiles,(profile_count,))
+        
+        #Start scan
+        self.write_lines(start_string)
+        self.relative()
+        self.move(x=length)
+        self.write(stop_string)
+
+
     def scan_area(self, x_start, x_stop, y_start, y_stop, y_step=0.3,scanning_feed=40):
         """ Scan an area of the build area. Returns point cloud in the form of numpy array
 
@@ -1164,7 +1197,7 @@ PSOCONTROL Y ARM""".format(y_step)
                 if self.two_way_comm is True:
                     response = self._socket.recv(8192)
                     response = decode2To3(response)
-                    print response
+                    #print response
                     if response[0] not in ['%','#']:
                         raise RuntimeError(response)
                     return response[1:-1]

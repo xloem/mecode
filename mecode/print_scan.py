@@ -28,6 +28,9 @@ import random
 g = G(scanner=False,direct_write=True,print_lines=False)
 g.rename_axis(z='A')
 
+#Create log file
+log = open('print_log.txt','w')
+
 #Experiment parameters
 press_interval = {'min':4, 'max':5, 'step':0.2} #PSI
 feed_interval = {'min':4, 'max':8, 'step':1} #mm/s
@@ -38,13 +41,15 @@ random_order = True
 #Printer settings
 efd_com_port = 3
 rows = 15
-travel_feed = 20 #mm/s
+travel_feed = 30 #mm/s
+scanning_feed = 10 #mm/s
 inital_dwell = 0.5 #s
-travel_height = 5 #mm
+travel_height = 3 #mm
 line_length = 15 #mm
 del_y = 3 #mm
-del_x = 30 #mm
-scanner_offset = {'x':203, 'y':120} #mm
+del_x = 20 #mm
+scanner_offset = {'x':34.366, 'y':0} #mm
+scanner_buffer = 1.5 #mm
 
 #Generate parameter space
 pressure = np.arange(press_interval['min'],press_interval['max']+press_interval['step']-0.01,press_interval['step'])
@@ -74,15 +79,38 @@ def printLine(pressure,feedrate,height):
 	g.feed(travel_feed)
 	g.abs_move(z=travel_height)
 
+def scanLine():
+	g.move(x=scanner_buffer-scanner_offset['x'])
+	#Start recording
+	g.feed(scanning_feed)
+	g.move(x=-line_length-2*scanner_buffer)
+	#Stop recording
+	g.feed(travel_feed)
+
 #Move to initial position defined by G92
 g.abs_move(x=0,y=0)
 
 i =0 
 for test in test_cases:
-	print "Pressure: {}, Feedrate: {}, Height: {}".format(*test)
+	#Logging
+	status = "Pressure: {}, Feedrate: {}, Height: {}".format(*test)
+	log = open('print_log.txt','a')
+	log.write(status+"\n")
+	log.close()
+	print status
+	
+	#Printing
 	printLine(*test)
+
+	#Scanning
+	scanLine()
+	
+	#Move to next position
+	#g.move(x=-line_length,y=del_y)
+	g.move(x=scanner_buffer+scanner_offset['x'],y=del_y)
+	
+	#Check if switching to next column
 	i += 1
-	g.move(x=-line_length,y=del_y)
 	if i % rows == 0:
 		g.abs_move(y=0)
 		g.move(x=del_x)
