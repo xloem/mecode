@@ -245,7 +245,8 @@ class KeyenceLineScanner(object):
 			if np.count_nonzero(self.get_profile(1)) != 0:
 				aquired.append(self.get_profile(1,True))
 				aquiredCount += 1
-				#print aquiredCount
+				print "Scanning...{0:.2f}%  \r".format(float(aquiredCount)/profile_count*100),
+		print "\n"
 		return np.array(aquired)
 
 	def processScanResults(self,data,num_passes,scan_width,scan_trim):

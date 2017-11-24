@@ -1,23 +1,46 @@
 DVAR $pos
-G90
-$pos = 62.23
+DVAR $loop
+DVAR $feed
+$feed = 50.0
+$pos = 15.0
 
-G1 a$pos F15
-G1 b$pos F15
-G1 c$pos F15
-G1 d$pos F15
-G1 XX$pos F15
-G1 YY$pos F15
-G1 ZZ$pos F15
-G1 UU$pos F15
-G1 AA2$pos F15
-G1 BB2$pos F15
-G1 CC2$pos F15
-G1 DD$pos F15
-G1 xx$pos F15
-G1 yy$pos F15
-G1 zz$pos F15
-G1 uu$pos F15
+FOR $loop = 0 TO 10
+	G91
+	;G1 b-$pos F$feed
+	;G1 c-$pos F$feed
+	;G1 d-$pos F$feed
+	;G1 XX-$pos F$feed
+	;G1 YY-$pos F$feed
+	;G1 ZZ-$pos F$feed
+	;G1 UU-$pos F$feed
+	;G1 AA2-$pos F$feed
+	G1 BB2-$pos F$feed
+	;G1 CC2-$pos F$feed
+	G1 DD-$pos F$feed
+	;G1 xx-$pos F$feed
+	G1 yy-$pos F$feed
+	;G1 zz-$pos F$feed
+	G1 UU-$pos  BB2-$pos F$feed
+	G4 P5.
+
+	;G1 b$pos F$feed
+	;G1 c$pos F$feed
+	;G1 d$pos F$feed
+	;G1 XX$pos F$feed
+	;G1 YY$pos F$feed
+	;G1 ZZ$pos F$feed
+	G1 UU$pos F$feed
+	;G1 AA2$pos F$feed
+	G1 BB2$pos F$feed
+	;G1 CC2$pos F$feed
+	G1 DD$pos F$feed
+	;G1 xx$pos F$feed
+	G1 yy$pos F$feed
+	;G1 zz$pos F$feed
+	G4 P5.
+NEXT $loop
+
+M2
 
 
 
