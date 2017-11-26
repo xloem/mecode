@@ -894,7 +894,8 @@ PSOCONTROL X ARM""".format(x_step)
         from multiprocessing.pool import ThreadPool
         pool = ThreadPool(processes=1)
         result = pool.apply_async(self.scan.continuous_get_profiles,(profile_count,))
-        
+        pool.terminate()
+
         #Start scan
         self.write_lines(start_string)
         self.relative()
