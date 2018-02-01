@@ -894,7 +894,6 @@ PSOCONTROL X ARM""".format(x_step)
         from multiprocessing.pool import ThreadPool
         pool = ThreadPool(processes=1)
         result = pool.apply_async(self.scan.continuous_get_profiles,(profile_count,))
-        pool.terminate()
 
         #Start scan
         self.write_lines(start_string)
@@ -902,10 +901,11 @@ PSOCONTROL X ARM""".format(x_step)
         #self.write('PSOCONTROL X FIRE')
         self.move(x=length)
         self.write(stop_string)
+        pool.terminate()
 
         return result.get()[:,413-width/y_step/2.0:413+width/y_step/2.0]
 
-    def scan_area(self, x_start, x_stop, y_start, y_stop, y_step=0.3,scanning_feed=40):
+    def scan_area(self, x_start, x_stop, y_start, y_stop, y_step=0.3,scanning_feed=30):
         """ Scan an area of the build area. Returns point cloud in the form of numpy array
 
         Parameters
@@ -934,17 +934,15 @@ PSOCONTROL X ARM""".format(x_step)
 PSOTRACK Y INPUT 7
 PSODISTANCE Y FIXED ABS(UNITSTOCOUNTS(Y, {}/16))
 PSOPULSE Y TIME 100, 100
-PSOOUTPUT Y PULSE
-PSOCONTROL Y ARM""".format(y_step)
-        stop_string = "PSOCONTROL Y OFF"
+PSOOUTPUT Y PULSE""".format(y_step)
 
         #Scanner constants
         scan_width = self.scan.scan_width
+        x_step = self.scan.IXPitch
 
         #Actual scanning area in x
-        area_width = x_stop - x_start
+        area_width = math.ceil(round((x_stop-x_start)/x_step,6))*x_step
         num_passes = int(math.ceil(area_width/scan_width))
-        scan_trim = (scan_width*num_passes-area_width)/2
 
         if num_passes % 2 == 0: #Is even
             scan_x_start = x_start + area_width/2 - (scan_width/2+(num_passes/2-1)*scan_width)
@@ -952,9 +950,24 @@ PSOCONTROL Y ARM""".format(y_step)
             scan_x_start = x_start + area_width/2 - (scan_width*(num_passes-1)/2)
         scan_x_length = (num_passes-1)*scan_width
 
+        #Adjust start location to be sure to hit 0 position
+        if not round((area_width-0.3)%0.6):
+            print "Applied offset"
+            offset_applied = True
+            scan_x_start -= x_step/2
+        else:
+            print "No Applied offset"
+            offset_applied = False
+        #Calculate how much to trim off sides of stiched scan
+        scan_trim_index = int(round(250*num_passes - (scan_x_start+(num_passes-1)*scan_width/2.0)/x_step - 0.5))
+
         #Actual scanning area in y
         scan_y_start = y_start
-        scan_y_length = y_stop-y_start
+        scan_y_length = math.ceil(round((y_stop-y_start)/y_step,6))*y_step
+
+        #Tell user if scan area has been adjusted
+        if area_width != (x_stop-x_start) or scan_y_length != (y_stop-y_start):
+            print ';WARNING! scanning area updated from ({:.2f},{:.2f}) to ({:.2f},{:.2f})'.format((x_stop-x_start),(y_stop-y_start),area_width,scan_y_length)
 
         #Move to starting point
         self.absolute()
@@ -962,7 +975,7 @@ PSOCONTROL Y ARM""".format(y_step)
         self.move(scan_x_start,scan_y_start)
         
         #Start second process for capturing scan data
-        profile_count = int(math.floor(scan_y_length/y_step))*num_passes
+        profile_count = int(math.floor(scan_y_length/y_step)+1)*num_passes
         print profile_count
         from multiprocessing.pool import ThreadPool
         pool = ThreadPool(processes=1)
@@ -971,13 +984,23 @@ PSOCONTROL Y ARM""".format(y_step)
         #Start scan
         self.write_lines(start_string)
         self.relative()
-        if num_passes > 1:
-            self.meander(scan_x_length,scan_y_length,scan_width,orientation='y')
-        else:
-            self.move(y=scan_y_length)
-        self.write(stop_string)
-        
-        return self.scan.processScanResults(result.get(),num_passes,scan_width,scan_trim)
+
+        sign = 1
+        # If number of passes > 1, it will go thorough for loop
+        for _ in range(num_passes-1):
+            self.write('PSOCONTROL Y FIRE')
+            self.write('PSOCONTROL Y ARM')
+            self.move(y=sign*scan_y_length)
+            self.write('PSOCONTROL Y OFF')
+            self.move(x=scan_width)
+            sign *=-1
+        self.write('PSOCONTROL Y FIRE')
+        self.write('PSOCONTROL Y ARM')
+        self.move(y=sign*scan_y_length)
+        self.write('PSOCONTROL Y OFF')
+
+        pool.terminate()
+        return self.scan.processScanResults(result.get(),num_passes,scan_trim_index,offset_applied)
 
     def print_layer(self, x_start, y_start, num_passes, y_length, x_offset, y_offset):
         """ Scans the area of the build area specified and prints a single layer.

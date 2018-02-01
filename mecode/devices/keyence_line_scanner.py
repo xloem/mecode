@@ -246,10 +246,11 @@ class KeyenceLineScanner(object):
 				aquired.append(self.get_profile(1,True))
 				aquiredCount += 1
 				print "Scanning...{0:.2f}%  \r".format(float(aquiredCount)/profile_count*100),
+			#print "{}/{}".format(aquiredCount,profile_count)
 		print "\n"
 		return np.array(aquired)
 
-	def processScanResults(self,data,num_passes,scan_width,scan_trim):
+	def processScanResults(self,data,num_passes,scan_trim_index,offset_applied):
 		"""
 		Cleans and correctly formats a 2d scan
 		Parameters
@@ -261,10 +262,9 @@ class KeyenceLineScanner(object):
 		"""
 		passes = np.vsplit(data,num_passes)
 		passes_fixed = [np.fliplr(x) if ind%2 else np.fliplr(np.flipud(x)) for ind, x in enumerate(passes) ]
-		passes_trimmed = [x[:,151:651] if ind>0 else x[:,150:651] for ind, x in enumerate(passes_fixed)]
+		passes_trimmed = [x[:,150:-150] for x in passes_fixed]
 		passes_final = np.hstack(passes_trimmed)
-		trim_ind = int(scan_trim/self.IXPitch)
-		passes_finalTrim = passes_final[:,trim_ind:-trim_ind]
+		passes_finalTrim = passes_final[:,scan_trim_index:-(scan_trim_index-offset_applied)]
 		scan2d = np.flipud(passes_finalTrim)
 
 		return scan2d
