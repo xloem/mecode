@@ -999,8 +999,9 @@ PSOOUTPUT Y PULSE""".format(y_step)
         self.move(y=sign*scan_y_length)
         self.write('PSOCONTROL Y OFF')
 
+        tmp = result.get()
         pool.terminate()
-        return self.scan.processScanResults(result.get(),num_passes,scan_trim_index,offset_applied)
+        return self.scan.processScanResults(tmp,num_passes,scan_trim_index,offset_applied)
 
     def print_layer(self, x_start, y_start, num_passes, y_length, x_offset, y_offset):
         """ Scans the area of the build area specified and prints a single layer.

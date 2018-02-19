@@ -123,8 +123,8 @@ for index, side in enumerate(sides):
 		mask = np.array(img)
 		img.show()
 		
-		IXStart = -0.1
-		IXPitch = 0.3
+		IXStart = 0
+		IXPitch = 0
 		IYStart = 0.3
 		IYPitch = 0.3
 		points = []

@@ -266,7 +266,6 @@ class KeyenceLineScanner(object):
 		passes_final = np.hstack(passes_trimmed)
 		passes_finalTrim = passes_final[:,scan_trim_index:-(scan_trim_index-offset_applied)]
 		scan2d = np.flipud(passes_finalTrim)
-
 		return scan2d
 
 	def export_point_cloud(self,export_location,data):
