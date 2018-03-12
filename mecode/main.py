@@ -879,18 +879,17 @@ class G(object):
         width : float  (default: 3)
             Width of scanning strip, centered in center (duh)
         """
-        y_step = 0.05
         x_step = 0.05
         start_string="""PSOCONTROL X RESET
 PSOTRACK X INPUT 6
 PSODISTANCE X FIXED ABS(UNITSTOCOUNTS(X, {}/16))
 PSOPULSE X TIME 100, 100
 PSOOUTPUT X PULSE
+PSOCONTROL X FIRE
 PSOCONTROL X ARM""".format(x_step)
-        stop_string = "PSOCONTROL X OFF"
 
         #Start second process for capturing scan data
-        profile_count = int(math.floor(math.fabs(length)/x_step))
+        profile_count = int(math.floor(math.fabs(length)/x_step)+1)
         from multiprocessing.pool import ThreadPool
         pool = ThreadPool(processes=1)
         result = pool.apply_async(self.scan.continuous_get_profiles,(profile_count,))
@@ -898,12 +897,13 @@ PSOCONTROL X ARM""".format(x_step)
         #Start scan
         self.write_lines(start_string)
         self.relative()
-        #self.write('PSOCONTROL X FIRE')
         self.move(x=length)
         self.write(stop_string)
+        self.write('PSOCONTROL X OFF')
+        tmp = result.get()
         pool.terminate()
 
-        return result.get()[:,413-width/y_step/2.0:413+width/y_step/2.0]
+        return tmp[:,413-width/y_step/2.0:413+width/y_step/2.0]
 
     def scan_area(self, x_start, x_stop, y_start, y_stop, y_step=0.3,scanning_feed=30):
         """ Scan an area of the build area. Returns point cloud in the form of numpy array
@@ -976,7 +976,7 @@ PSOOUTPUT Y PULSE""".format(y_step)
         
         #Start second process for capturing scan data
         profile_count = int(math.floor(scan_y_length/y_step)+1)*num_passes
-        print profile_count
+        #print profile_count
         from multiprocessing.pool import ThreadPool
         pool = ThreadPool(processes=1)
         result = pool.apply_async(self.scan.continuous_get_profiles,(profile_count,))
