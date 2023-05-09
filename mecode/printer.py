@@ -198,6 +198,7 @@ class Printer(object):
         """
         self._start_read_thread()
         self._start_print_thread()
+        self.reset_linenumber(self._current_line_idx)
 
     def sendline(self, line):
         """ Send the given line over serial by appending it to the send buffer
