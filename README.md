@@ -1,7 +1,7 @@
 Mecode
 ======
   `
-[![Unit Tests](https://github.com/rtellez700/mecode/actions/workflows/python-package.yml/badge.svg)](https://github.com/rtellez700/mecode/actions/workflows/python-package.yml)
+[![Unit Tests](https://github.com/xloem/mecode/actions/workflows/python-package.yml/badge.svg)](https://github.com/xloem/mecode/actions/workflows/python-package.yml)
 
 ### GCode for all
 
@@ -128,19 +128,10 @@ rename it.
 Installation
 ------------
 
-*Outdated* The easiest method to install mecode is with pip:
+The easiest method to install mecode is with pip:
 
 ```bash
-pip install git+https://github.com/rtellez700/mecode.git
-```
-
-To install from source:
-
-```bash
-$ git clone https://github.com/rtellez700/mecode.git
-$ cd mecode
-$ pip install -r requirements.txt
-$ python setup.py install
+pip install git+https://github.com/xloem/mecode.git
 ```
 
 Optional Dependencies
