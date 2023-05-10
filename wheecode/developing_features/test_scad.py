@@ -4,7 +4,7 @@ import math
 import numpy as np
 import numpy.linalg as la
 import os
-from mecode import GMatrix
+from wheecode import GMatrix
 #from matrix import GMatrix
 
 g = GMatrix()

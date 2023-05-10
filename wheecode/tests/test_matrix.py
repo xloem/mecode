@@ -8,10 +8,10 @@ import math
 HERE = dirname(abspath(__file__))
 
 try:
-    from mecode import GMatrix
+    from wheecode import GMatrix
 except:
     sys.path.append(abspath(join(HERE, '..', '..')))
-    from mecode import GMatrix
+    from wheecode import GMatrix
 
 from test_main import TestGFixture
 

@@ -1,14 +1,16 @@
-Mecode
+Wheecode
 ======
   `
-[![Unit Tests](https://github.com/xloem/mecode/actions/workflows/python-package.yml/badge.svg)](https://github.com/xloem/mecode/actions/workflows/python-package.yml)
+[![Unit Tests](https://github.com/xloem/wheecode/actions/workflows/python-package.yml/badge.svg)](https://github.com/xloem/wheecode/actions/workflows/python-package.yml)
 
 ### GCode for all
 
-Mecode is designed to simplify GCode generation. It is not a slicer, thus it
-can not convert CAD models to 3D printer ready code. It simply provides a
-convenient, human-readable layer just above GCode. If you often find
-yourself manually writing your own GCode, then mecode is for you.
+Wheecode is a fork of [mecode][1], designed to simplify GCode generation.  It
+is not a slicer, thus it can not convert CAD models to 3D printer ready code.
+It simply provides a convenient, human-readable layer just above GCode. If you
+often find yourself manually writing your own GCode, then wheecode is for you.
+
+[1]: https://github.com/jminardi/mecode
 
 Basic Use
 ---------
@@ -16,7 +18,7 @@ To use, simply instantiate the `G` object and use its methods to trace your
 desired tool path.
 
 ```python
-from mecode import G
+from wheecode import G
 g = G()
 g.move(10, 10)  # move 10mm in x and 10mm in y
 g.arc(x=10, y=5, radius=20, direction='CCW')  # counterclockwise arc with a radius of 20
@@ -25,7 +27,7 @@ g.abs_move(x=1, y=1)  # move the tool head to position (1, 1)
 g.home()  # move the tool head to the origin (0, 0)
 ```
 
-By default `mecode` simply prints the generated GCode to stdout. If instead you
+By default `wheecode` simply prints the generated GCode to stdout. If instead you
 want to generate a file, you can pass a filename when
 instantiating the `G` object.
 
@@ -65,8 +67,8 @@ g-code commands are sent directly to the connected device using a serial
 communication protocol:
 
 ```python
-import mecode
-g = mecode.G(
+import wheecode
+g = wheecode.G(
     direct_write=True, 
     direct_write_mode="serial", 
     printer_port="/dev/tty.usbmodem1411", 
@@ -128,23 +130,32 @@ rename it.
 Installation
 ------------
 
-The easiest method to install mecode is with pip:
+The easiest method to install wheecode is with pip:
 
 ```bash
-pip install git+https://github.com/xloem/mecode.git
+pip install wheecode
+```
+
+To install from source:
+
+```bash
+$ git clone https://github.com/xloem/wheecode.git
+$ cd wheecode
+$ pip install -r requirements.txt
+$ python setup.py install
 ```
 
 Optional Dependencies
 ---------------------
 The following dependencies are optional, and are only needed for
-visualization. An easy way to install them is to use [conda][1].
+visualization. An easy way to install them is to use [conda][3].
 
 * numpy
 * matplotlib
 * vpython
 * mayavi
 
-[1]: https://www.anaconda.com/
+[2]: https://www.anaconda.com/
 
 TODO
 ----
@@ -162,6 +173,6 @@ TODO
 
 Credits
 -------
-This software was developed by the [Lewis Lab][2] at Harvard University. It is based on Jack Minardi's (jack@minardi.org) codebase (https://github.com/jminardi/mecode) which is not maintained anymore.
+This software was originally developed by the [Lewis Lab][3] at Harvard University, likely by Jack Minardi, and then forked and added on to by many people and organizations listed in the commit history.
 
-[2]: http://lewisgroup.seas.harvard.edu/
+[3]: http://lewisgroup.seas.harvard.edu/

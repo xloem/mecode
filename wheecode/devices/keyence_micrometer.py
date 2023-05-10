@@ -1,4 +1,4 @@
-from mecode.devices.base_serial_device import BaseSerialDevice
+from wheecode.devices.base_serial_device import BaseSerialDevice
 
 
 class KeyenceMicrometer(BaseSerialDevice):

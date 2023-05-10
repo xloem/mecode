@@ -30,7 +30,7 @@ jobs:
           pip-dependency-file: requirements.dev.txt
       - run:
           name: Run tests
-          command: python -m unittest discover mecode/tests
+          command: python -m unittest discover wheecode/tests
 
 workflows:
   ci: # This is the name of the workflow, feel free to change it to better match your workflow.

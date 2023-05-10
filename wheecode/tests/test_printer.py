@@ -11,7 +11,7 @@ except ImportError:
 
 import serial
 
-from mecode.printer import Printer
+from wheecode.printer import Printer
 
 # for python 2/3 compatibility
 try:
@@ -54,7 +54,7 @@ class TestPrinter(unittest.TestCase):
 
     def setUp(self):
         # self.serial_port_mock = Mock(spec=serial.Serial, name='MockSerial')
-        # self.serial_port_patcher = patch('mecode.printer.serial.Serial')
+        # self.serial_port_patcher = patch('wheecode.printer.serial.Serial')
         # serial_port_constructor = self.serial_port_patcher.start()
         # serial_port_constructor.return_value = self.serial_port_mock
         # self.printer = Printer()

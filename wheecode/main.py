@@ -1,20 +1,20 @@
 """
-Mecode
+Wheecode
 ======
 
 ### GCode for all
 
-Mecode is designed to simplify GCode generation. It is not a slicer, thus it
+Wheecode is designed to simplify GCode generation. It is not a slicer, thus it
 can not convert CAD models to 3D printer ready code. It simply provides a
 convenient, human-readable layer just above GCode. If you often find
-yourself manually writing your own GCode, then mecode is for you.
+yourself manually writing your own GCode, then wheecode is for you.
 
 Basic Use
 ---------
 To use, simply instantiate the `G` object and use its methods to trace your
 desired tool path. ::
 
-    from mecode import G
+    from wheecode import G
     g = G()
     g.move(10, 10)  # move 10mm in x and 10mm in y
     g.arc(x=10, y=5, radius=20, direction='CCW')  # counterclockwise arc with a radius of 20
@@ -22,7 +22,7 @@ desired tool path. ::
     g.abs_move(x=1, y=1)  # move the tool head to position (1, 1)
     g.home()  # move the tool head to the origin (0, 0)
 
-By default `mecode` simply prints the generated GCode to stdout. If instead you
+By default `wheecode` simply prints the generated GCode to stdout. If instead you
 want to generate a file, you can pass a filename. ::
 
     g = G(outfile='path/to/file.gcode')
@@ -144,7 +144,7 @@ class G(object):
         baudrate: int (default: 250000)
             The baudrate to connect to the printer with.
         two_way_comm : bool (default: True)
-            If True, mecode waits for a response after every line of GCode is
+            If True, wheecode waits for a response after every line of GCode is
             sent over the socket. The response is returned by the `write`
             method. Only applies if `direct_write` is True.
         x_axis : str (default 'X')
@@ -259,7 +259,7 @@ class G(object):
         Context manager entry
         Can use like:
 
-        with mecode.G(  outfile=self.outfile,
+        with wheecode.G(  outfile=self.outfile,
                         print_lines=False,
                         aerotech_include=False) as g:
             <code block>

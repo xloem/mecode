@@ -1,11 +1,11 @@
 from os import path
 from setuptools import setup, find_packages
 
-INFO = {'name': 'mecode',
-        'version': '0.4.5',
+INFO = {'name': 'wheecode',
+        'version': '0.5.0',
         'description': 'Simple GCode generator',
-        'author': 'Rodrigo Telles',
-        'author_email': 'rtelles@g.harvard.edu',
+        'author': 'Wheeeeeeeee!!',
+        'author_email': '0xloem@gmail.com',
         }
 
 here = path.abspath(path.dirname(__file__))
@@ -33,8 +33,8 @@ setup(
     author=INFO['author'],
     author_email=INFO['author_email'],
     packages=find_packages(),
-    url='https://github.com/rtellez700/mecode',
-    download_url='https://github.com/rtellez700/mecode/tarball/master',
+    url='https://github.com/xloem/wheecode',
+    download_url='https://github.com/xloem/wheecode/tarball/main',
     keywords=['gcode', '3dprinting', 'cnc', 'reprap', 'additive'],
     zip_safe=False,
     package_data = {

@@ -10,10 +10,10 @@ from os.path import abspath, dirname
 HERE = dirname(abspath(__file__))
 
 try:
-    from mecode import G, is_str, decode2To3
+    from wheecode import G, is_str, decode2To3
 except:
     sys.path.append(abspath(os.path.join(HERE, '..', '..')))
-    from mecode import G, is_str, decode2To3
+    from wheecode import G, is_str, decode2To3
 
 class TestGFixture(unittest.TestCase):
     def getGClass(self):
