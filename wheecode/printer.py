@@ -379,6 +379,7 @@ class Printer(object):
         full_resp = ''
         while not self.stop_reading:
             if self.s is not None:
+                sleep(0) # release GIL if print worker needs time
                 line = decode2To3(self.s.readline())
                 if line.startswith('Resend: '):  # example line: "Resend: 143"
                     self._current_line_idx = int(line.split()[1]) - 1 + self._reset_offset
