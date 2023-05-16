@@ -1912,7 +1912,7 @@ class G(object):
             vp.scene.width = scene_dims[0]
             vp.scene.height = scene_dims[1]
             vp.scene.center = vp.vec(0,0,0) 
-            vp.scene.forward = vp.vec(-1,-1,-1) 
+            vp.scene.forward = vp.vec(-1,-1,-1)
             vp.scene.background = vp.vec(1,1,1)
 
             position_hist = history
@@ -2067,7 +2067,12 @@ class G(object):
                     self.head.abs_move(vp.vec(*pos),feed=t_speed,print_line=extruding_state,tail_color=t_color)
 
             self.head = Printhead(nozzle_diameter=nozzle_dims[0],nozzle_length=nozzle_dims[1], start_location=vp.vec(*position_hist[0]))
-            vp.box(pos=vp.vec(substrate_dims[0],substrate_dims[2],substrate_dims[1]),length=substrate_dims[3], height=substrate_dims[4], width=substrate_dims[5],color=vp.color.gray(0.8))
+            vp.box(pos=vp.vec(substrate_dims[0],substrate_dims[2],substrate_dims[1]),
+                   length=substrate_dims[3],
+                   height=substrate_dims[4],
+                   width=substrate_dims[5],
+                   color=vp.color.gray(0.8),
+                   opacity=0.3)
             vp.scene.waitfor('click')
             run()
 
