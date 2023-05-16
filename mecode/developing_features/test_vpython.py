@@ -1,6 +1,9 @@
-#import sys
-#sys.path.append("..")
+import sys
+
+sys.path.append("../../")
+
 from mecode import G
+
 g = G()
 g.set_pressure(3,30)
 g.set_pressure(6,30)
