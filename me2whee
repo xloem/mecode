@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+set -e
+
+MERGE=1
+MECODE_BASE=mecode
+WHEECODE_BASE=wheecode
+
+echo ""
+echo "Usage: $0 commit_to_rebase [original_base_commit [new_base_commit]]"
+echo ""
+echo "Makes a branch that rebases a commit while mutating me->whee or whee->me ."
+if (( MERGE ))
+then
+    echo ""
+    echo "The branch will contain a final merge commit uniting the two trees."
+fi
+echo ""
+echo "If not specified, will assume that existing branches named"
+echo "$MECODE_BASE and $WHEECODE_BASE point to the base commits to change."
+echo ""
+
+type git-filter-repo >/dev/null
+
+SRCTIP=$(git rev-parse "$1")
+branchname=$(git rev-parse --abbrev-ref "$1")
+if [ -z "$branchname" ]
+then
+    branchname="$SRCTIP"
+fi
+name4ref() {
+    ref="$1"
+    if [ -n "$(git ls-tree "$ref" mecode)" ] 
+    then
+        echo mecode
+    elif [ -n "$(git ls-tree "$ref" wheecode)" ] 
+    then
+        echo wheecode
+    else
+        echo "$ref" contains neither /mecode nor /wheecode
+        exit -1
+    fi
+}
+if [ -z "$2" ]
+then
+    SRCBASE=$(git rev-parse "$MECODE_BASE")
+else
+    SRCBASE=$(git rev-parse "$2")
+fi
+if [ -z "$3" ]
+then
+    if [ "$(name4ref "$SRCBASE")" == mecode ]
+    then
+        DSTBASE=$(git rev-parse "$WHEECODE_BASE")
+    elif [ "$(name4ref "$SRCBASE")" == wheecode ]
+    then
+        DSTBASE=$(git rev-parse "$MECODE_BASE")
+    fi
+else
+    DSTBASE=$(git rev-parse "$3")
+fi
+if ! git merge-base --is-ancestor "$SRCBASE" "$SRCTIP"
+then
+    if git merge-base --is-ancestor "$DSTBASE" "$SRCTIP"
+    then
+        tmp="$SRCBASE"
+        SRCBASE="$DSTBASE"
+        DSTBASE="$SRCBASE"
+    else
+        echo "$SRCTIP" has neither "$SRCBASE" nor "$DSTBASE" as an ancestor.
+        exit -1
+    fi
+elif git merge-base --is-ancestor "$DSTBASE" "$SRCTIP"
+then
+    echo "$SRCTIP" has both "$SRCBASE" and "$DSTBASE" as an ancestor.
+    exit -1
+fi
+tipname=$(name4ref "$SRCTIP")
+srcname=$(name4ref "$SRCBASE")
+dstname=$(name4ref "$DSTBASE")
+if [ "$srcname" != "$tipname" ]
+then
+    echo "$srcbase" is "$srcname" but "$tipbase" is "$tipname"
+    exit -1
+fi
+transform=--path-rename="$srcname":"$dstname"
+
+#git symbolic-ref refs/me2whee/base "$SRCBASE"
+#git symbolic-ref refs/me2whee/tip "$SRCTIP"
+#git checkout refs/me2whee/tip
+
+SRC_REPO="$(pwd)"
+DST_REPO="$(mktemp -d)"
+mkdir -p "$DST_REPO"
+git init "$DST_REPO"
+pushd "$DST_REPO"
+
+#git fetch "$SRC_REPO" "$SRCTIP"
+#git checkout "$SRCTIP"
+git filter-repo $transform --source "$SRC_REPO" --target "$DST_REPO" --refs "$SRCTIP" --replace-refs update-and-add
+
+DSTTIP=$(git rev-parse replace/"$SRCTIP")
+SRCBASE=$(git rev-parse replace/"$SRCBASE")
+git checkout "$DSTTIP"
+git fetch "$SRC_REPO" "$DSTBASE"
+git rebase --onto "$DSTBASE" "$SRCBASE"
+DSTTIP=$(git rev-parse HEAD)
+DST_TREE=$(git rev-parse HEAD^{tree})
+popd
+
+git fetch "$DST_REPO" "$DST_TIP"
+rm -rf "$DST_REPO"
+if (( MERGE ))
+then
+    MERGE_COMMIT="$(git commit-tree -m "Rebased and merged $1 from $srcname into $dstname." "$DST_TREE" -p "$DSTTIP" -p "$SRCTIP")"
+    git branch "$branchname-$dstname" "$MERGE_COMMIT"
+    echo
+    echo "Rebase and merge is in $branchname-$dstname"
+else
+    git branch "$branchname-$dstname" "$DSTTIP"
+    echo
+    echo "Rebase is in $branchname-$dstname"
+fi
