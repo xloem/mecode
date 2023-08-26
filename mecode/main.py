@@ -995,6 +995,62 @@ class G(object):
         if was_absolute:
             self.absolute()
 
+    def square_spiral(self, n_turns, spacing, start='center', origin=(0,0), **kwargs):
+        """ Performs a square spiral.
+
+        Parameters
+        ----------
+        n_turns : int
+            The number of spirals
+        spacing : float
+            The spacing between lines of the spiral.
+        start : str (either 'center', 'edge')
+            The location to start the spiral (default: 'center').
+        direction : str (either 'CW', 'CCW') #TODO: not being used right now
+            Direction to print the spiral, either clockwise or counterclockwise. (default: 'CW')
+        origin : tuple
+            Absolute coordinates of spiral center. Helpful when printing in absolute coordinates
+
+        Examples
+
+        >>> # TODO
+        
+        
+        """
+        d_F = spacing
+
+        x_pts = [origin[0], d_F]
+        y_pts = [origin[1], 0]
+
+        for j in range(1, n_turns + 1):
+            top_right = (d_F*j, d_F*j)
+            top_left = (-d_F*j, d_F*j)
+            bottom_left = (-d_F*j, -d_F*j)
+            bottom_right = (d_F*j + d_F, -d_F*j)
+
+            x_pts.extend([top_right[0], top_left[0], bottom_left[0], bottom_right[0]])
+            y_pts.extend([top_right[1], top_left[1], bottom_left[1], bottom_right[1]])
+
+        x_pts = np.array(x_pts)
+        y_pts = np.array(y_pts)
+        # adjust last point to ensure spiral is a square
+        # TODO: if want adjustable spiral orientation / direction, will need to adjust this
+        x_pts[-1] -= d_F
+
+        if start == 'edge':
+            x_pts = x_pts[::-1]
+            y_pts = y_pts[::-1]
+
+        if self.is_relative:
+            x_pts = x_pts[1:] - x_pts[:-1]
+            y_pts = y_pts[1:] - y_pts[:-1]
+        
+        for x_j, y_j in zip(x_pts, y_pts):
+            self.move(x_j, y_j, **kwargs)
+
+        return x_pts, y_pts
+
+
     def spiral(self, end_diameter, spacing, feedrate, start='center', direction='CW', 
                 step_angle = 0.1, start_diameter = 0, center_position=None):
         """ Performs an Archimedean spiral. Start by moving to the center of the spiral location
