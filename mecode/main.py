@@ -1909,6 +1909,48 @@ class G(object):
         import matplotlib.pyplot as plt
         history = np.array(self.position_history)
 
+        if backend == '2d':
+            fig = plt.figure()
+            ax = fig.add_subplot(projection=None)
+
+            extruding_hist = dict(self.extruding_history)
+            #Stepping through all moves after initial position
+            extruding_state = False
+            for index, (pos, color) in enumerate(zip(history[1:],self.color_history[1:]),1):
+                if index in extruding_hist:
+                    extruding_state =  extruding_hist[index][1]
+
+                X, Y = history[index-1:index+1, 0], history[index-1:index+1, 1]
+
+                if extruding_state:
+                    if color_on:
+                        # ax.plot(X, Y, Z,color = cm.gray(self.color_history[index])[:-1])
+                        ax.plot(X, Y, color = self.color_history[index])
+                    else:
+                        ax.plot(X, Y, 'b')
+                else:
+                    if not hide_travel:
+                        ax.plot(X,Y,'k--',linewidth=0.5)
+
+            X, Y = history[:, 0], history[:, 1]
+
+            # Hack to keep 3D plot's aspect ratio square. See SO answer:
+            # http://stackoverflow.com/questions/13685386
+            max_range = np.array([X.max()-X.min(),
+                                  Y.max()-Y.min()]).max() / 2.0
+
+            mean_x = X.mean()
+            mean_y = Y.mean()
+            ax.set_xlim(mean_x - max_range, mean_x + max_range)
+            ax.set_ylim(mean_y - max_range, mean_y + max_range)
+            ax.set_xlabel("X")
+            ax.set_ylabel("Y")
+
+            if outfile == None:
+                plt.show()
+            else:
+                plt.savefig(outfile,dpi=500)
+
         if backend == 'matplotlib':
             fig = plt.figure()
             ax = fig.add_subplot(projection='3d')
