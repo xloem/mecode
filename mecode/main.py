@@ -814,7 +814,7 @@ class G(object):
                 self.arc(x=radius,y=radius,direction='CCW',radius=radius, linearize=linearize)
 
     def meander(self, x, y, spacing, start='LL', orientation='x', tail=False,
-                minor_feed=None, color=(0,0,0,0.5)):
+                minor_feed=None, color=(0,0,0,0.5), mode='default'):
         """ Infill a rectangle with a square wave meandering pattern. If the
         relevant dimension is not a multiple of the spacing, the spacing will
         be tweaked to ensure the dimensions work out.
@@ -865,12 +865,13 @@ class G(object):
         else:
             major, major_name = y, 'y'
             minor, minor_name = x, 'x'
-
-        actual_spacing = self._meander_spacing(minor, spacing)
-        if abs(actual_spacing) != spacing:
-            msg = ';WARNING! meander spacing updated from {} to {}'
-            self.write(msg.format(spacing, actual_spacing))
-        spacing = actual_spacing
+            
+        if mode.lower() != 'default':
+            actual_spacing = self._meander_spacing(minor, spacing)
+            if abs(actual_spacing) != spacing:
+                msg = ';WARNING! meander spacing updated from {} to {}'
+                self.write(msg.format(spacing, actual_spacing))
+            spacing = actual_spacing
         sign = 1
 
         was_absolute = True
