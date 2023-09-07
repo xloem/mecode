@@ -1864,7 +1864,7 @@ class G(object):
 
     def view(self, backend='matplotlib', outfile=None, hide_travel=False,color_on=True, nozzle_cam=False,
              fast_forward = 3, framerate = 60, nozzle_dims=[1.0,20.0], 
-             substrate_dims=[0.0,0.0,-1.0,300,1,300], scene_dims = [720,720]):
+             substrate_dims=[0.0,0.0,-1.0,300,1,300], scene_dims = [720,720], ax=None):
         """ View the generated Gcode.
 
         Parameters
@@ -1948,11 +1948,12 @@ class G(object):
             ax.set_ylabel("Y")
 
             if outfile == None:
-                plt.show()
+                return ax
             else:
                 plt.savefig(outfile,dpi=500)
+    
 
-        if backend == 'matplotlib':
+        elif backend == 'matplotlib':
             fig = plt.figure()
             ax = fig.add_subplot(projection='3d')
 
@@ -1994,9 +1995,12 @@ class G(object):
             ax.set_zlabel("Z")
 
             if outfile == None:
-                plt.show()
+                # plt.show()
+                return ax
             else:
                 plt.savefig(outfile,dpi=500)
+
+            return ax
 
         elif backend == 'mayavi':
             from mayavi import mlab
