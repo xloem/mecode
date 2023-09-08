@@ -814,7 +814,7 @@ class G(object):
                 self.arc(x=radius,y=radius,direction='CCW',radius=radius, linearize=linearize)
 
     def meander(self, x, y, spacing, start='LL', orientation='x', tail=False,
-                minor_feed=None, color=(0,0,0,0.5), mode='default'):
+                minor_feed=None, color=(0,0,0,0.5), mode='auto'):
         """ Infill a rectangle with a square wave meandering pattern. If the
         relevant dimension is not a multiple of the spacing, the spacing will
         be tweaked to ensure the dimensions work out.
@@ -837,6 +837,8 @@ class G(object):
             Feed rate to use in the minor axis
         color : hex string or rgb(a) string
             Specifies a color to be added to color history for viewing.
+        mode : str (either 'auto' or 'manual')
+            If set to auto (default value) will auto correct spacing to fit within x and y dimensions.
 
         Examples
         --------
@@ -866,11 +868,12 @@ class G(object):
             major, major_name = y, 'y'
             minor, minor_name = x, 'x'
             
-        if mode.lower() != 'default':
+        if mode.lower() == 'auto':
             actual_spacing = self._meander_spacing(minor, spacing)
             if abs(actual_spacing) != spacing:
                 msg = ';WARNING! meander spacing updated from {} to {}'
                 self.write(msg.format(spacing, actual_spacing))
+                self.write(f";\t IF YOU INTENDED TO USE A SPACING OF {spacing:.4f} USE mode='manual'")
             spacing = actual_spacing
         sign = 1
 
@@ -1900,9 +1903,11 @@ class G(object):
             planar substrate can be specified using a list in the 
             format: [x, y, z, length, height, width].
         scene_dims: list (default: [720,720])
-            When using the 'vpython' bakcend, the dimensions of the
+            When using the 'vpython' backened, the dimensions of the
             viewing window can be specified using a list in the 
             format: [width, height]
+        ax : matplotlib axes object
+            Useful for adding additional functionailities to plot when debugging.
 
         """
         import matplotlib.cm as cm
@@ -1911,8 +1916,9 @@ class G(object):
         history = np.array(self.position_history)
 
         if backend == '2d':
-            fig = plt.figure()
-            ax = fig.add_subplot(projection=None)
+            if ax is None:
+                fig = plt.figure()
+                ax = fig.add_subplot(projection=None)
 
             extruding_hist = dict(self.extruding_history)
             #Stepping through all moves after initial position
@@ -1948,14 +1954,18 @@ class G(object):
             ax.set_ylabel("Y")
 
             if outfile == None:
-                return ax
+                if ax is None:
+                    plt.show()
+                else:
+                    return ax
             else:
                 plt.savefig(outfile,dpi=500)
     
 
         elif backend == 'matplotlib':
-            fig = plt.figure()
-            ax = fig.add_subplot(projection='3d')
+            if ax is None:
+                fig = plt.figure()
+                ax = fig.add_subplot(projection='3d')
 
             extruding_hist = dict(self.extruding_history)
             #Stepping through all moves after initial position
@@ -1995,8 +2005,10 @@ class G(object):
             ax.set_zlabel("Z")
 
             if outfile == None:
-                # plt.show()
-                return ax
+                if ax is None:
+                    plt.show()
+                else:
+                    return ax
             else:
                 plt.savefig(outfile,dpi=500)
 
