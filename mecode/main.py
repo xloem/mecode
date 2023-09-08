@@ -886,16 +886,21 @@ class G(object):
         major_feed = self.speed
         if not minor_feed:
             minor_feed = self.speed
-        for _ in range(int(self._meander_passes(minor, spacing))):
+        
+        n_passes = int(self._meander_passes(minor, spacing))
+
+        for j in range(n_passes):
             self.move(**{major_name: (sign * major), 'color': color})
             if minor_feed != major_feed:
                 self.feed(minor_feed)
-            self.move(**{minor_name: spacing, 'color': color})
+            if (j < n_passes-1):
+                self.move(**{minor_name: spacing, 'color': color})
+            if (j==n_passes-1) and ( tail==True ):
+                self.move(**{minor_name: spacing, 'color': color})
+
             if minor_feed != major_feed:
                 self.feed(major_feed)
             sign = -1 * sign
-        if tail is False:
-            self.move(**{major_name: (sign * major), 'color': color})
 
         if was_absolute:
             self.absolute()
