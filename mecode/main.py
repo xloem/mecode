@@ -965,7 +965,6 @@ class G(object):
             was_absolute = False
             
         for j in range(n_lines):
-            print()
             self.move(**{major_name: sign_major*major})
 
             if j < (n_lines-1):
@@ -1136,7 +1135,7 @@ class G(object):
 
         if was_absolute:
             self.absolute()
-            
+
         return x_pts, y_pts
 
 
