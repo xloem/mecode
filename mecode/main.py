@@ -905,6 +905,77 @@ class G(object):
         if was_absolute:
             self.absolute()
 
+    def serpentine(self, L, n_lines, spacing, start='LL', orientation='x', color=(0,0,0,0.5)):
+        """ Generate a square wave meandering/serpentine pattern. Unlike `meander`,
+         will not tweak spacing dimension.
+
+        Parameters
+        ----------
+        L : float
+            Major axis dimension.
+        n_lines : int
+            The number of lines to generate
+        spacing : float
+            The space between parallel serpentine paths.
+        start : str (either 'LL', 'UL', 'LR', 'UR') (default: 'LL')
+            The start of the meander -  L/U = lower/upper, L/R = left/right
+            This assumes an origin in the lower left.
+        orientation : str ('x' or 'y') (default: 'x')
+        color : hex string or rgb(a) string
+            Specifies a color to be added to color history for viewing.
+        mode : str (either 'auto' or 'manual')
+            If set to auto (default value) will auto correct spacing to fit within x and y dimensions.
+
+        Examples
+        --------
+        >>> # meander through a 10x10 square with a spacing of 1mm starting in
+        >>> # the lower left.
+        >>> g.meander(10, 10, 1)
+
+        >>> # 3x5 meander with a spacing of 1 and with parallel lines through y
+        >>> g.meander(3, 5, spacing=1, orientation='y')
+
+        >>> # 10x5 meander with a spacing of 2 starting in the upper right.
+        >>> g.meander(10, 5, 2, start='UR')
+
+        """
+        if orientation.lower() == 'x':
+            major, major_name = L, 'x'
+            minor, minor_name = spacing, 'y'
+        else:
+            major, major_name = L, 'y'
+            minor, minor_name = spacing, 'x'
+        
+        sign_minor = +1
+        sign_major = +1
+        if start.upper() == 'UL':
+            sign_major = +1 if orientation.lower()=='x' else -1
+            sign_minor = -1 if orientation.lower()=='x' else +1
+        elif start.upper() == 'UR':
+            sign_major = -1
+            sign_minor = -1
+        elif start.upper() == 'LR':
+            sign_major = -1 if orientation.lower()=='x' else +1
+            sign_minor = +1 if orientation.lower()=='x' else -1
+
+        was_absolute = True
+        if not self.is_relative:
+            self.relative()
+        else:
+            was_absolute = False
+            
+        for j in range(n_lines):
+            print()
+            self.move(**{major_name: sign_major*major})
+
+            if j < (n_lines-1):
+                self.move(**{minor_name: sign_minor*minor})
+            
+            sign_major = -1*sign_major
+        
+        if was_absolute:
+            self.absolute()
+
     def clip(self, axis='z', direction='+x', height=4, linearize=False):
         """ Move the given axis up to the given height while arcing in the
         given direction.
@@ -1026,6 +1097,12 @@ class G(object):
         
         
         """
+        was_absolute = True
+        if not self.is_relative:
+            self.relative()
+        else:
+            was_absolute = False
+
         d_F = spacing
 
         x_pts = [origin[0], d_F]
@@ -1057,6 +1134,9 @@ class G(object):
         for x_j, y_j in zip(x_pts, y_pts):
             self.move(x_j, y_j, **kwargs)
 
+        if was_absolute:
+            self.absolute()
+            
         return x_pts, y_pts
 
 
