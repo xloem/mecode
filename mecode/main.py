@@ -1074,7 +1074,7 @@ class G(object):
         if was_absolute:
             self.absolute()
 
-    def square_spiral(self, n_turns, spacing, start='center', origin=(0,0), **kwargs):
+    def square_spiral(self, n_turns, spacing, start='center', origin=(0,0), dwell=None, **kwargs):
         """ Performs a square spiral.
 
         Parameters
@@ -1107,7 +1107,14 @@ class G(object):
         x_pts = [origin[0], d_F]
         y_pts = [origin[1], 0]
 
-        for j in range(1, n_turns + 1):
+        if hasattr(n_turns, '__iter__'):
+            turn_0 = n_turns[0]
+            turn_F = n_turns[1]
+        else:
+            turn_0 = 1
+            turn_F = n_turns
+
+        for j in range(1, turn_F + 1):
             top_right = (d_F*j, d_F*j)
             top_left = (-d_F*j, d_F*j)
             bottom_left = (-d_F*j, -d_F*j)
@@ -1122,6 +1129,11 @@ class G(object):
         # TODO: if want adjustable spiral orientation / direction, will need to adjust this
         x_pts[-1] -= d_F
 
+        if turn_0 > 1:
+            print('turn_0', turn_0, 'and removing', 4*(turn_0-1))
+            x_pts = x_pts[4*(turn_0-1)::]
+            y_pts = y_pts[4*(turn_0-1)::]
+
         if start == 'edge':
             x_pts = x_pts[::-1]
             y_pts = y_pts[::-1]
@@ -1132,6 +1144,9 @@ class G(object):
         
         for x_j, y_j in zip(x_pts, y_pts):
             self.move(x_j, y_j, **kwargs)
+
+            if dwell is not None:
+                self.dwell(dwell)
 
         if was_absolute:
             self.absolute()
