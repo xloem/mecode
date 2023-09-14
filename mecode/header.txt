@@ -11,6 +11,8 @@ $DO1.0=0
 $DO2.0=0
 $DO3.0=0
 
+MFO 100 ; ensures MFO is set to commanded value in gcode
+
 Primary ; sets primary units mm and s
 G65 F2000; accel speed mm/s^2
 G66 F2000; decel speed mm/s^2
