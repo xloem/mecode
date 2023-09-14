@@ -1135,6 +1135,7 @@ class G(object):
         x_pts[-1] -= d_F
 
         if turn_0 > 1:
+            original_pts = (x_pts, y_pts)
             x_pts = x_pts[4*(turn_0-1)::]
             y_pts = y_pts[4*(turn_0-1)::]
 
@@ -1155,7 +1156,7 @@ class G(object):
         if was_absolute:
             self.absolute()
 
-        return x_pts, y_pts
+        return x_pts, y_pts, original_pts
 
 
     def spiral(self, end_diameter, spacing, feedrate, start='center', direction='CW', 
