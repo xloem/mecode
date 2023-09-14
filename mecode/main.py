@@ -1130,7 +1130,6 @@ class G(object):
         x_pts[-1] -= d_F
 
         if turn_0 > 1:
-            print('turn_0', turn_0, 'and removing', 4*(turn_0-1))
             x_pts = x_pts[4*(turn_0-1)::]
             y_pts = y_pts[4*(turn_0-1)::]
 
