@@ -2439,5 +2439,11 @@ class G(object):
             self.extruding_history.append((len_history - 1, self.extruding))
 
     def _update_print_time(self, x,y,z):
+        if x is None:
+            x = self.current_position[0]
+        if y is None:
+            y = self.current_position[0]
+        if z is None:
+            z = self.current_position[0]
         self.print_time += np.linalg.norm([x,y,z]) / self.speed
 
