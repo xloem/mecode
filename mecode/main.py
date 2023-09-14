@@ -180,6 +180,7 @@ class G(object):
         self.speed_history = []
         self.extruding = [None,False]
         self.extruding_history = []
+        self.print_time = 0
 
         self._socket = None
         self._p = None
@@ -376,9 +377,11 @@ class G(object):
             kwargs['E'] = filament_length + current_extruder_position
 
         self._update_current_position(x=x, y=y, z=z, color=color, **kwargs)
+        self._update_print_time(x,y,z)
         args = self._format_args(x, y, z, **kwargs)
         cmd = 'G0 ' if rapid else 'G1 '
         self.write(cmd + args)
+
 
     def abs_move(self, x=None, y=None, z=None, rapid=False, **kwargs):
         """ Same as `move` method, but positions are interpreted as absolute.
@@ -2434,3 +2437,7 @@ class G(object):
         if (len(self.extruding_history) == 0
             or self.extruding_history[-1][1] != self.extruding):
             self.extruding_history.append((len_history - 1, self.extruding))
+
+    def _update_print_time(self, x,y,z):
+        self.print_time += np.linalg.norm([x,y,z]) / self.speed
+
