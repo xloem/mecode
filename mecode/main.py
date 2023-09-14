@@ -1079,7 +1079,7 @@ class G(object):
         if was_absolute:
             self.absolute()
 
-    def square_spiral(self, n_turns, spacing, start='center', origin=(0,0), dwell=None, **kwargs):
+    def square_spiral(self, n_turns, spacing, start='center', origin=(0,0), dwell=None, manual=False, **kwargs):
         """ Performs a square spiral.
 
         Parameters
@@ -1147,11 +1147,12 @@ class G(object):
             x_pts = x_pts[1:] - x_pts[:-1]
             y_pts = y_pts[1:] - y_pts[:-1]
         
-        for x_j, y_j in zip(x_pts, y_pts):
-            self.move(x_j, y_j, **kwargs)
+        if not manual:
+            for x_j, y_j in zip(x_pts, y_pts):
+                self.move(x_j, y_j, **kwargs)
 
-            if dwell is not None:
-                self.dwell(dwell)
+                if dwell is not None:
+                    self.dwell(dwell)
 
         if was_absolute:
             self.absolute()
