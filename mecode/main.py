@@ -328,6 +328,8 @@ class G(object):
             self._socket.close()
         if self._p is not None:
             self._p.disconnect(wait)
+        
+        self.calc_print_time()
 
     def home(self):
         """ Move the tool head to the home position (X=0, Y=0).
@@ -1756,6 +1758,9 @@ class G(object):
             scaling = np.array([getattr(ax, 'get_{}lim'.format(dim))() for dim in 'xyz']); ax.auto_scale_xyz(*[[np.min(scaling), np.max(scaling)]]*3)
             plt.show()
 
+    def calc_print_time(self):
+        print(f'\nApproximate print time: \n\t{self.print_time:.3f} seconds \n\t{self.print_time/60:.1f} min \n\t{self.print_time/60/60:.1f} hrs\n')
+        
     # ROS3DA Functions  #######################################################
 
 
