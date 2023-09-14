@@ -2447,8 +2447,8 @@ class G(object):
         if x is None:
             x = self.current_position[0]
         if y is None:
-            y = self.current_position[0]
+            y = self.current_position[1]
         if z is None:
-            z = self.current_position[0]
+            z = self.current_position[2]
         self.print_time += np.linalg.norm([x,y,z]) / self.speed
 
