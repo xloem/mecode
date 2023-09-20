@@ -1134,8 +1134,9 @@ class G(object):
         # TODO: if want adjustable spiral orientation / direction, will need to adjust this
         x_pts[-1] -= d_F
 
+        original_pts = (x_pts, y_pts)
+        
         if turn_0 > 1:
-            original_pts = (x_pts, y_pts)
             x_pts = x_pts[4*(turn_0-1)::]
             y_pts = y_pts[4*(turn_0-1)::]
 
