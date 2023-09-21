@@ -1078,6 +1078,7 @@ class G(object):
 
         if was_absolute:
             self.absolute()
+
     def rect_spiral(self, n_turns, spacing, start='center', origin=(0,0), dwell=None, manual=False, **kwargs):
         """ Performs a square spiral.
 
@@ -1085,8 +1086,8 @@ class G(object):
         ----------
         n_turns : int
             The number of spirals
-        spacing : float
-            The spacing between lines of the spiral.
+        spacing : float or iterable
+            The spacing between lines of the spiral. Spacing can be a tuple or list to specify (dx, dy) spacings.
         start : str (either 'center', 'edge')
             The location to start the spiral (default: 'center').
         direction : str (either 'CW', 'CCW') #TODO: not being used right now
