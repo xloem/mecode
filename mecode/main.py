@@ -1158,7 +1158,8 @@ class G(object):
         if was_absolute:
             self.absolute()
 
-        return x_pts, y_pts, original_pts
+        if manual:
+            return x_pts, y_pts, original_pts
 
 
     def spiral(self, end_diameter, spacing, feedrate, start='center', direction='CW', 
