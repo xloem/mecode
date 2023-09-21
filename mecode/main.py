@@ -1112,7 +1112,7 @@ class G(object):
             dx = spacing[0]
             dy = spacing[1]
         else:
-            dy = dy = spacing
+            d = dy = spacing
 
         x_pts = [origin[0], dx]
         y_pts = [origin[1], 0]
