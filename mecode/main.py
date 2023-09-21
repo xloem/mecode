@@ -1078,6 +1078,93 @@ class G(object):
 
         if was_absolute:
             self.absolute()
+    def rect_spiral(self, n_turns, spacing, start='center', origin=(0,0), dwell=None, manual=False, **kwargs):
+        """ Performs a square spiral.
+
+        Parameters
+        ----------
+        n_turns : int
+            The number of spirals
+        spacing : float
+            The spacing between lines of the spiral.
+        start : str (either 'center', 'edge')
+            The location to start the spiral (default: 'center').
+        direction : str (either 'CW', 'CCW') #TODO: not being used right now
+            Direction to print the spiral, either clockwise or counterclockwise. (default: 'CW')
+        origin : tuple
+            Absolute coordinates of spiral center. Helpful when printing in absolute coordinates
+
+        Examples
+
+        >>> # TODO
+        
+        
+        """
+        was_absolute = True
+        if not self.is_relative:
+            self.relative()
+        else:
+            was_absolute = False
+
+        # d_F = spacing
+
+        if hasattr(spacing, '__iter__'):
+            dx = spacing[0]
+            dy = spacing[1]
+        else:
+            dy = dy = spacing
+
+        x_pts = [origin[0], dx]
+        y_pts = [origin[1], 0]
+
+        if hasattr(n_turns, '__iter__'):
+            turn_0 = n_turns[0]
+            turn_F = n_turns[1]
+        else:
+            turn_0 = 1
+            turn_F = n_turns
+
+        for j in range(1, turn_F + 1):
+            top_right = (dx*j, dy*j)
+            top_left = (-dx*j, dy*j)
+            bottom_left = (-dx*j, -dy*j)
+            bottom_right = (dx*j + dx, -dy*j)
+
+            x_pts.extend([top_right[0], top_left[0], bottom_left[0], bottom_right[0]])
+            y_pts.extend([top_right[1], top_left[1], bottom_left[1], bottom_right[1]])
+
+        x_pts = np.array(x_pts)
+        y_pts = np.array(y_pts)
+        # adjust last point to ensure spiral is a square
+        # TODO: if want adjustable spiral orientation / direction, will need to adjust this
+        x_pts[-1] -= dx
+
+        original_pts = (x_pts, y_pts)
+        
+        if turn_0 > 1:
+            x_pts = x_pts[4*(turn_0-1)::]
+            y_pts = y_pts[4*(turn_0-1)::]
+
+        if start == 'edge':
+            x_pts = x_pts[::-1]
+            y_pts = y_pts[::-1]
+
+        if self.is_relative:
+            x_pts = x_pts[1:] - x_pts[:-1]
+            y_pts = y_pts[1:] - y_pts[:-1]
+        
+        if not manual:
+            for x_j, y_j in zip(x_pts, y_pts):
+                self.move(x_j, y_j, **kwargs)
+
+                if dwell is not None:
+                    self.dwell(dwell)
+
+        if was_absolute:
+            self.absolute()
+
+        if manual:
+            return x_pts, y_pts, original_pts
 
     def square_spiral(self, n_turns, spacing, start='center', origin=(0,0), dwell=None, manual=False, **kwargs):
         """ Performs a square spiral.
