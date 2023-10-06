@@ -2113,6 +2113,8 @@ class G(object):
         import matplotlib.pyplot as plt
         history = np.array(self.position_history)
 
+        use_local_ax = True if ax is None else False
+
         if backend == '2d':
             if ax is None:
                 fig = plt.figure()
@@ -2152,7 +2154,7 @@ class G(object):
             ax.set_ylabel("Y")
 
             if outfile == None:
-                if ax is None:
+                if use_local_ax:
                     plt.show()
                 else:
                     return ax
@@ -2203,7 +2205,7 @@ class G(object):
             ax.set_zlabel("Z")
 
             if outfile == None:
-                if ax is None:
+                if use_local_ax:
                     plt.show()
                 else:
                     return ax
