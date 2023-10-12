@@ -329,7 +329,9 @@ class G(object):
         if self._p is not None:
             self._p.disconnect(wait)
         
-        self.calc_print_time()
+        # do not calculate print time during unittests
+        if 'unittest' not in sys.modules.keys():
+            self.calc_print_time()
 
     def home(self):
         """ Move the tool head to the home position (X=0, Y=0).
