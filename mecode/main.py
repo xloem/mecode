@@ -1667,6 +1667,46 @@ class G(object):
         """
         self.write('Call setPress P{} Q{}'.format(com_port, value))
 
+    def linear_actuator_on(self, speed, dispenser):
+        ''' Sets Aerotech (or similar) linear actuator speed and ON.
+
+        Parameters
+        ----------
+        speed : float
+            The linear actuator speed value to set [in local units].
+        dispenser : int or str
+            The linear actuator number (int) or full custom name (str).
+        Examples
+        --------
+        >>> # Set extrusion speed to 3 mm/s on dispenser 2
+        >>> g.linear_actuator_on(speed=3, dispenser=2)
+
+        >>> # Set custom dispenser name to `PDISP22`
+        >>> g.linear_actuator_on(speed=3, dispenser='PDISP22')
+        '''
+
+        if str(dispenser).isdigit():
+            self.write(f'FREERUN PDISP{dispenser:d} {speed:.6f}')
+        else:
+            self.write(f'FREERUN {dispenser} {speed:.6f}')
+
+    def linear_actuator_off(self, dispenser):
+        ''' Turn Aerotech (or similar) linear actuator OFF.
+
+        Parameters
+        ----------
+        dispenser : int or str
+            The linear actuator number (int) or full custom name (str).
+        Examples
+        --------
+        >>> # Turn linear actuator `PDISP2` off
+        >>> g.linear_actuator_on(speed=3, dispenser='PDISP2')
+        '''
+        if str(dispenser).isdigit():
+            self.write(f'FREERUN PDISP{dispenser:d} STOP')
+        else:
+            self.write(f'FREERUN {dispenser} STOP')
+
     def set_vac(self, com_port, value):
         """ Same as `set_pressure` method, but for vacuum.
         """

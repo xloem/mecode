@@ -755,6 +755,24 @@ class TestG(TestGFixture):
         assert(type(lines[0]) == bytes)
         outfile.close()
 
+    def test_linear_actuator_on(self):
+        self.g.linear_actuator_on(3, 2)
+        self.expect_cmd(f'FREERUN PDISP2 {3:.6f}')
+        self.assert_output()
+
+        self.g.linear_actuator_on(3, 'PDISP2')
+        self.expect_cmd(f'FREERUN {"PDISP2"} {3:.6f}')
+        self.assert_output()
+
+    def test_linear_actuator_off(self):
+        self.g.linear_actuator_off(2)
+        self.expect_cmd(f'FREERUN PDISP2 STOP')
+        self.assert_output()
+
+        self.g.linear_actuator_off('PDISP2')
+        self.expect_cmd(f'FREERUN {"PDISP2"} STOP')
+        self.assert_output()
+
 
 if __name__ == '__main__':
     unittest.main()
