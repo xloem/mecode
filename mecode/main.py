@@ -533,15 +533,15 @@ class G(object):
                 raise RuntimeError(msg)
             vect_dir= [values[0]/dist,values[1]/dist]
             if direction == 'CW':
-                arc_rotation_matrix = np.matrix([[0, -1],[1, 0]])
+                arc_rotation_matrix = np.array([[0, -1],[1, 0]])
             elif direction =='CCW':
-                arc_rotation_matrix = np.matrix([[0, 1],[-1, 0]])
+                arc_rotation_matrix = np.array([[0, 1],[-1, 0]])
             perp_vect_dir = np.array(vect_dir)*arc_rotation_matrix
             a_vect= np.array([values[0]/2,values[1]/2])
             b_length = math.sqrt(radius**2-(dist/2)**2)
             b_vect = b_length*perp_vect_dir
             c_vect = a_vect+b_vect
-            center_coords = c_vect
+            # center_coords = c_vect
             final_pos = a_vect*2-c_vect 
             initial_pos = -c_vect
         else:
@@ -557,17 +557,21 @@ class G(object):
                 raise RuntimeError(msg)
             vect_dir= [(values[0]-cp[k[0]])/dist,(values[1]-cp[k[1]])/dist]
             if direction == 'CW':
-                arc_rotation_matrix = np.matrix([[0, -1],[1, 0]])
+                arc_rotation_matrix = np.array([[0, -1],[1, 0]])
             elif direction =='CCW':
-                arc_rotation_matrix = np.matrix([[0, 1],[-1, 0]])
+                arc_rotation_matrix = np.array([[0, 1],[-1, 0]])
             perp_vect_dir = np.array(vect_dir)*arc_rotation_matrix
             a_vect = np.array([(values[0]-cp[k[0]])/2.0,(values[1]-cp[k[1]])/2.0])
             b_length = math.sqrt(radius**2-(dist/2)**2)
             b_vect = b_length*perp_vect_dir
             c_vect = a_vect+b_vect
-            center_coords = np.array(cp[k[:2]])+c_vect
-            final_pos = np.array(cp[k[:2]])+a_vect*2-c_vect
-            initial_pos = np.array(cp[k[:2]])
+            # center_coords = np.array(cp[k[:2]])+c_vect
+
+            final_pos = np.array([cp[k] for k in k[:2]])+a_vect*2-c_vect
+            initial_pos = np.array([cp[k] for k in k[:2]])
+
+            # final_pos = np.array(cp[k[:2]])+a_vect*2-c_vect
+            # initial_pos = np.array(cp[k[:2]])
 
         #extrude feature implementation
         # only designed for flow calculations in x-y plane
@@ -609,7 +613,7 @@ class G(object):
             segments = []
             for angle in angle_step:
                 radius_vect = -c_vect
-                radius_rotation_matrix = np.matrix([[math.cos(angle), -math.sin(angle)],
+                radius_rotation_matrix = np.array([[math.cos(angle), -math.sin(angle)],
                                  [math.sin(angle), math.cos(angle)]])
                 int_point = radius_vect*radius_rotation_matrix
                 segments.append(int_point)
@@ -2581,10 +2585,10 @@ class G(object):
 
     def _update_print_time(self, x,y,z):
         if x is None:
-            x = self.current_position[0]
+            x = self.current_position['x']
         if y is None:
-            y = self.current_position[1]
+            y = self.current_position['y']
         if z is None:
-            z = self.current_position[2]
+            z = self.current_position['z']
         self.print_time += np.linalg.norm([x,y,z]) / self.speed
 

@@ -125,8 +125,10 @@ class TestG(TestGFixture):
         self.assert_output()
 
     def test_home(self):
+        self.g.feed(1)
         self.g.home()
         self.expect_cmd("""
+        G1 F1
         G90
         G1 X0.000000 Y0.000000
         G91
@@ -368,7 +370,7 @@ class TestG(TestGFixture):
 
     def test_abs_arc(self):
         self.g.relative()
-        self.g.abs_arc(x=0, y=10)
+        self.g.abs_arc(x=0, y=10, linearize=False)
         self.expect_cmd("""
         G90
         G17
@@ -378,7 +380,7 @@ class TestG(TestGFixture):
         self.assert_output()
         self.assert_position({'x': 0, 'y': 10, 'z': 0})
 
-        self.g.abs_arc(x=0, y=10)
+        self.g.abs_arc(x=0, y=10, linearize=False)
         self.expect_cmd("""
         G90
         G17
@@ -389,7 +391,7 @@ class TestG(TestGFixture):
         self.assert_position({'x': 0, 'y': 10, 'z': 0})
 
         self.g.absolute()
-        self.g.abs_arc(x=0, y=20)
+        self.g.abs_arc(x=0, y=20, linearize=False)
         self.expect_cmd("""
         G90
         G17
@@ -400,8 +402,10 @@ class TestG(TestGFixture):
         self.g.relative()
 
     def test_rect(self):
+        self.g.feed(1)
         self.g.rect(10, 5)
         self.expect_cmd("""
+        G1 F1
         G1 Y5.000000
         G1 X10.000000
         G1 Y-5.000000
@@ -481,8 +485,11 @@ class TestG(TestGFixture):
         self.assert_position({'x': 0, 'y': 0, 'z': 0})
 
     def test_meander(self):
+        self.g.feed(1)
+        self.g.relative()
         self.g.meander(2, 2, 1)
         self.expect_cmd("""
+        G1 F1
         G1 X2.000000
         G1 Y1.000000
         G1 X-2.000000
@@ -610,35 +617,28 @@ class TestG(TestGFixture):
         self.assert_output()
 
     def test_rename_axis(self):
+        self.g.feed(1)
         self.g.rename_axis(z='A')
         self.g.move(10, 10, 10)
         self.assert_position({'x': 10.0, 'y': 10.0, 'A': 10, 'z': 10})
-        self.expect_cmd("""
-        G1 X10.000000 Y10.000000 A10.000000
-        """)
+        self.expect_cmd('''G1 F1 G1 X10.000000 Y10.000000 A10.000000''')
         self.assert_output()
 
         self.g.rename_axis(z='B')
         self.g.move(10, 10, 10)
         self.assert_position({'x': 20.0, 'y': 20.0, 'z': 20, 'A': 10, 'B': 10})
-        self.expect_cmd("""
-        G1 X10.000000 Y10.000000 B10.000000
-        """)
+        self.expect_cmd('G1 X10.000000 Y10.000000 B10.000000')
         self.assert_output()
 
         self.g.rename_axis(x='W')
         self.g.move(10, 10, 10)
-        self.assert_position({'x': 30.0, 'y': 30.0, 'z': 30, 'A': 10, 'B': 20,
-                              'W': 10})
-        self.expect_cmd("""
-        G1 W10.000000 Y10.000000 B10.000000
-        """)
+        self.assert_position({'x': 30.0, 'y': 30.0, 'z': 30, 'A': 10, 'B': 20,'W': 10})
+        self.expect_cmd('G1 W10.000000 Y10.000000 B10.000000')
         self.assert_output()
 
         self.g.rename_axis(x='X')
         self.g.arc(x=10, z=10, linearize=False)
-        self.assert_position({'x': 40.0, 'y': 30.0, 'z': 40, 'A': 10, 'B': 30,
-                              'W': 10})
+        self.assert_position({'x': 40.0, 'y': 30.0, 'z': 40, 'A': 10, 'B': 30,'W': 10})
         self.expect_cmd("""
         G16 X Y B
         G18
