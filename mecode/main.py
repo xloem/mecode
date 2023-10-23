@@ -50,6 +50,7 @@ import os
 import sys
 import numpy as np
 from collections import defaultdict
+import warnings 
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -362,6 +363,12 @@ class G(object):
         >>> g.move(A=20)
 
         """
+
+        if self.speed == 0:
+            msg = 'WARNING! no print speed has been set. Will default to previously used print speed.'
+            self.write('; ' + msg)
+            warnings.warn(msg)
+
         if self.extrude is True and 'E' not in kwargs.keys():
             if self.is_relative is not True:
                 x_move = self.current_position['x'] if x is None else x
@@ -550,11 +557,13 @@ class G(object):
             dist = math.sqrt(
                 (cp[k[0]] - values[0]) ** 2 + (cp[k[1]] - values[1]) ** 2
             )
+
             if radius == 'auto':
                 radius = dist / 2.0
             elif abs(radius) < dist / 2.0:
                 msg = 'Radius {} to small for distance {}'.format(radius, dist)
                 raise RuntimeError(msg)
+
             vect_dir= [(values[0]-cp[k[0]])/dist,(values[1]-cp[k[1]])/dist]
             if direction == 'CW':
                 arc_rotation_matrix = np.array([[0, -1],[1, 0]])
