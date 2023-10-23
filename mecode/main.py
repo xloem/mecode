@@ -1705,6 +1705,9 @@ class G(object):
         else:
             self.write(f'FREERUN {dispenser} {speed:.6f}')
 
+        
+        self.extruding = [dispenser, True]
+
     def linear_actuator_off(self, dispenser):
         ''' Turn Aerotech (or similar) linear actuator OFF.
 
@@ -1721,6 +1724,8 @@ class G(object):
             self.write(f'FREERUN PDISP{dispenser:d} STOP')
         else:
             self.write(f'FREERUN {dispenser} STOP')
+
+        self.extruding = [dispenser, False]
 
     def set_vac(self, com_port, value):
         """ Same as `set_pressure` method, but for vacuum.
