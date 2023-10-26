@@ -339,6 +339,27 @@ class G(object):
         """
         self.abs_move(x=0, y=0)
 
+    def move_inc(self, disp=None, speed=None, axis=None, accel=None, decel=None):
+        ''' Typically used to move linear actuator incrementally. Operates in
+        relative mode.
+
+        disp : float
+            amount to displace `axis`. Negative values can be used for retraction
+        speed : float
+            Speed to move `axis` at
+        accel : float
+            If provided, will set the acceleration of `axis`
+            TODO: NOT CURRENTLY SUPPORTED
+        decel : float
+            If provided, will set the deceleration of `axis`
+            TODO: NOT CURRENTLY SUPPORTED
+        '''
+        # self.extrude = True
+        # if accel is not None:
+            
+        self.write(f'MOVEINC {axis} {disp:.6f} {speed:.6f}')
+        # self.extrude = False
+
     def move(self, x=None, y=None, z=None, rapid=False, color=(0,0,0,0.5), **kwargs):
         """ Move the tool head to the given position. This method operates in
         relative mode unless a manual call to `absolute` was given previously.
@@ -392,7 +413,6 @@ class G(object):
         args = self._format_args(x, y, z, **kwargs)
         cmd = 'G0 ' if rapid else 'G1 '
         self.write(cmd + args)
-
 
     def abs_move(self, x=None, y=None, z=None, rapid=False, **kwargs):
         """ Same as `move` method, but positions are interpreted as absolute.
