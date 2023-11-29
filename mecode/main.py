@@ -1005,10 +1005,10 @@ class G(object):
             was_absolute = False
             
         for j in range(n_lines):
-            self.move(**{major_name: sign_major*major})
+            self.move(**{major_name: sign_major*major, 'color': color})
 
             if j < (n_lines-1):
-                self.move(**{minor_name: sign_minor*minor})
+                self.move(**{minor_name: sign_minor*minor, 'color': color})
             
             sign_major = -1*sign_major
         
@@ -2607,6 +2607,13 @@ class G(object):
         z = self._current_position['z']
 
         self.position_history.append((x, y, z))
+        if color[0] > 1:
+            color[0] = color[0]/255
+        if color[1] > 1:
+            color[1] = color[1]/255
+        if color[2] > 1:
+            color[2] = color[2]/255
+            
         self.color_history.append(color)
 
         len_history = len(self.position_history)
