@@ -388,7 +388,12 @@ class G(object):
         if self.speed == 0:
             msg = 'WARNING! no print speed has been set. Will default to previously used print speed.'
             self.write('; ' + msg)
-            warnings.warn(msg)
+            
+            raise Exception('''
+                            >>> No print speed has been specified
+                            e.g., to set print speed to 15 mm/s use:
+                            \t\t g.feed(15)
+                            ''')
 
         if self.extrude is True and 'E' not in kwargs.keys():
             if self.is_relative is not True:
@@ -2613,7 +2618,7 @@ class G(object):
             color[1] = color[1]/255
         if color[2] > 1:
             color[2] = color[2]/255
-            
+
         self.color_history.append(color)
 
         len_history = len(self.position_history)
