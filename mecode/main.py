@@ -207,12 +207,15 @@ class G(object):
         if setup:
             self.setup()
 
+        self._check_latest_version()
+
     @property
     def current_position(self):
         return self._current_position
 
     def _check_latest_version(self):
-        import re, requests, packaging
+        import re, requests
+        from packaging import version
 
         def read_version_from_setup():
             import pkg_resources  # part of setuptools
@@ -253,9 +256,9 @@ class G(object):
 
         if local_package_version:
             self.version = local_package_version
-            print(f"Running mecode v{local_package_version}")
-            
-        if packaging.version.parse(local_package_version) < packaging.version.parse(remote_package_version):
+            print(f"\nRunning mecode v{local_package_version}")
+
+        if version.parse(local_package_version) < version.parse(remote_package_version):
             print(f"A new mecode version is available. To upgrade to the latest version run:\n\t>>> pip install git+https://github.com/rtellez700/mecode.git --upgrade")
             
     def __enter__(self):
