@@ -182,6 +182,7 @@ class G(object):
         self.extruding = [None,False]
         self.extruding_history = []
         self.print_time = 0
+        self.version = None
 
         self._socket = None
         self._p = None
@@ -210,6 +211,53 @@ class G(object):
     def current_position(self):
         return self._current_position
 
+    def _check_latest_version(self):
+        import re, requests, packaging
+
+        def read_version_from_setup():
+            import pkg_resources  # part of setuptools
+
+            version = pkg_resources.require("mecode")[0].version
+            
+            return version
+
+        def read_version_from_github(username, repo, path='setup.py'):
+            # GitHub raw content URL
+            raw_url = f'https://raw.githubusercontent.com/{username}/{repo}/main/{path}'
+
+            try:
+                # Make a GET request to the raw content URL
+                response = requests.get(raw_url)
+                response.raise_for_status()  # Raise an exception for HTTP errors
+
+                # Use regular expression to find the version string
+                version_match = re.search(r"'version': ['\"]([^'\"]*)['\"]", response.text)
+
+                if version_match:
+                    version = version_match.group(1)
+                    return version
+                else:
+                    print("Version not found in remote setup.py.")
+                    return None
+
+            except requests.exceptions.RequestException as e:
+                print(f"Error: {e}")
+                return None
+
+        github_username = 'rtellez700'
+        github_repo = 'mecode'
+
+        remote_package_version = read_version_from_github(github_username, github_repo)
+
+        local_package_version = read_version_from_setup()
+
+        if local_package_version:
+            self.version = local_package_version
+            print(f"Running mecode v{local_package_version}")
+            
+        if packaging.version.parse(local_package_version) < packaging.version.parse(remote_package_version):
+            print(f"A new mecode version is available. To upgrade to the latest version run:\n\t>>> pip install git+https://github.com/rtellez700/mecode.git --upgrade")
+            
     def __enter__(self):
         """
         Context manager entry
