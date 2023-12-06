@@ -141,6 +141,7 @@ TODO
 - [ ] auto set MFO=100% before each print
 - [ ] add ability to read current status of aerotech
   - [ ] turn off omnicure after aborted runs
+- [ ] add support for identifying part bounds and specifying safe post print "parking"
 
 
 Credits
