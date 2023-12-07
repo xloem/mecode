@@ -53,8 +53,15 @@ g.meander(10, 10, 1)
 g.view()
 ```
 
-The graphics backend can be specified when calling the `view()` method, e.g. `g.view('matplotlib')`.
-`mayavi` is the default graphics backend.
+The graphics backend can be specified when calling the `view()` method and providing one of the following as the `backend`:
+- `2d` -- 2D visualization figure
+- `matplotlib` -- 3D visualization figure
+- `vpython` -- animated rendering
+
+E.g.
+```python
+g.view('matplotlib')
+```
 
 All GCode Methods
 -----------------
@@ -67,13 +74,36 @@ All methods have detailed docstrings and examples.
 * `dwell()`
 * `home()`
 * `move()`
+* `move_inc`
 * `abs_move()`
+* `rapid`
+* `abs_rapid`
+* `circle`
 * `arc()`
 * `abs_arc()`
 * `rect()`
+* `round_rect`
 * `meander()`
+* `serpentine`
 * `clip()`
 * `triangular_wave()`
+* `rect_spiral`
+* `square_spiral`
+* `spiral`
+* `gradient_spiral`
+* `purge_meander`
+* `get_axis_pos`
+* `toggle_pressure`
+* `set_pressure`
+* `set_vac`
+* `linear_actuator_on`
+* `linear_actuator_off`
+* `set_valve`
+* `omni_on`
+* `omni_off`
+* `omni_intensity`
+* `set_alicat_pressure`
+* `view`
 
 Matrix Transforms
 -----------------
@@ -104,7 +134,7 @@ rename it.
 Installation
 ------------
 
-*Outdated* The easiest method to install mecode is with pip:
+The easiest method to install mecode is with pip:
 
 ```bash
 pip install git+https://github.com/rtellez700/mecode.git
@@ -138,7 +168,6 @@ TODO
 - [ ] create github page
 - [ ] build out multi-nozzle support
     - [ ] include multi-nozzle support in view method.
-- [ ] auto set MFO=100% before each print
 - [ ] add ability to read current status of aerotech
   - [ ] turn off omnicure after aborted runs
 - [ ] add support for identifying part bounds and specifying safe post print "parking"
