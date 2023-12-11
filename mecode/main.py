@@ -1879,6 +1879,16 @@ class G(object):
         """
         self.write('Call setAlicatPress P{} Q{}'.format(com_port, value))
 
+    def run_pump(self, com_port):
+        '''Run pump with internally stored settings.
+            Note: to run a pump, first call `set_rate` then call `run`'''
+        self.write(f'Call runPump P{com_port}')
+    
+    def stop_pump(self, com_port):
+        '''Stops the pump'''
+        self.write(f'Call stopPump P{com_port}')
+
+
     def calc_CRC8(self,data):
         CRC8 = 0
         for letter in list(bytearray(data, encoding='utf-8')):
