@@ -1,0 +1,60 @@
+site_name: mecode
+# site_description: Modern, extensible Python project management
+# site_author: Rodrigo Telles
+# site_url: https://hatch.pypa.io
+# repo_name: pypa/hatch
+# repo_url: https://github.com/pypa/hatch
+# edit_uri: blob/master/docs
+copyright: 'Copyright &copy; 2014-present'
+
+docs_dir: docs
+site_dir: site
+theme:
+  name: material
+  # custom_dir: docs/.overrides
+  language: en
+  favicon: assets/images/logo.svg
+  icon:
+    repo: fontawesome/brands/github-alt
+    logo: material/egg
+  font:
+    text: Roboto
+    code: Roboto Mono
+  palette:
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+  features:
+    - content.action.edit
+    - content.code.copy
+    - content.tabs.link
+    - content.tooltips
+    - navigation.expand
+    - navigation.footer
+    - navigation.instant
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+nav:
+  - About: index.md
+  - Walkthrough:
+    - Installation: install.md
+  - Reference: api-reference.md
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [mecode]
