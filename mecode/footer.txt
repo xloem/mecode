@@ -291,11 +291,10 @@ DFS runPump
         $strtask1 = DBLTOSTR( $P, 0 )
         $strtask1 = "COM" + $strtask1
         $hFile = FILEOPEN $strtask1, 2
-        COMMINIT $hFile, "baud=19200 parity=N data=8 stop=1"
+        COMMINIT $hFile, "baud=115200 parity=N data=8 stop=1"
         COMMSETTIMEOUT $hFile, -1, -1, 1000
         
-        $strtask2 = "irun" + "\x0D"
-        FILEWRITENOTERM $hFile $strtask2
+        FILEWRITENOTERM $hFile "irun\x0D"
         FILECLOSE $hFile
 
 ENDDFS
@@ -305,11 +304,10 @@ DFS stopPump
         $strtask1 = DBLTOSTR( $P, 0 )
         $strtask1 = "COM" + $strtask1
         $hFile = FILEOPEN $strtask1, 2
-        COMMINIT $hFile, "baud=19200 parity=N data=8 stop=1"
+        COMMINIT $hFile, "baud=115200 parity=N data=8 stop=1"
         COMMSETTIMEOUT $hFile, -1, -1, 1000
         
-        $strtask2 = "stop" + "\x0D"
-        FILEWRITENOTERM $hFile $strtask2
+        FILEWRITENOTERM $hFile "stop\x0D"
         FILECLOSE $hFile
 
 ENDDFS
