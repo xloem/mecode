@@ -2298,7 +2298,7 @@ class G(object):
                 plt.savefig(outfile,dpi=500)
     
 
-        elif backend == 'matplotlib':
+        elif backend == 'matplotlib' or backend == '3d':
             if ax is None:
                 fig = plt.figure()
                 ax = fig.add_subplot(projection='3d')
@@ -2354,7 +2354,7 @@ class G(object):
             from mayavi import mlab
             mlab.plot3d(history[:, 0], history[:, 1], history[:, 2])
 
-        elif backend == 'vpython':
+        elif backend == 'vpython' or backend == 'animated':
             import vpython as vp
             import copy
             

@@ -17,6 +17,7 @@ theme:
   icon:
     repo: fontawesome/brands/github-alt
     logo: material/egg
+    annotation: material/arrow-right-circle
   font:
     text: Roboto
     code: Roboto Mono
@@ -47,10 +48,21 @@ theme:
     - navigation.tabs
     - navigation.tabs.sticky
 nav:
-  - About: index.md
-  - Walkthrough:
-    - Installation: install.md
-  - Reference: api-reference.md
+  - Home:
+    - About: index.md
+    - Getting Started:
+      - Installation: install.md
+      - Quick Start: quick-start.md
+      - Tutorials:
+        - Multilayer Prints: tutorials/multilayer-prints.md
+        - UV Curing on-the-fly: tutorials/in-situ-uv-curing.md
+        - Multimaterial Printing: tutorials/multimaterial-printing.md
+        - Matrix Transformation: tutorial/matrix-transformations.md
+    - About:
+      - Release Notes: release-notes.md
+      - Contributing: contributing.md
+      - License: license.md
+  - API Reference: api-reference.md
 plugins:
   - search
   - mkdocstrings:
@@ -58,3 +70,21 @@ plugins:
       handlers:
         python:
           paths: [mecode]
+          options:
+            docstring_style: numpy
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
