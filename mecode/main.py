@@ -1,50 +1,3 @@
-"""
-Mecode
-======
-
-### GCode for all
-
-Mecode is designed to simplify GCode generation. It is not a slicer, thus it
-can not convert CAD models to 3D printer ready code. It simply provides a
-convenient, human-readable layer just above GCode. If you often find
-yourself manually writing your own GCode, then mecode is for you.
-
-Basic Use
----------
-To use, simply instantiate the `G` object and use its methods to trace your
-desired tool path. ::
-
-    from mecode import G
-    g = G()
-    g.move(10, 10)  # move 10mm in x and 10mm in y
-    g.arc(x=10, y=5, radius=20, direction='CCW')  # counterclockwise arc with a radius of 20
-    g.meander(5, 10, spacing=1)  # trace a rectangle meander with 1mm spacing between the passes
-    g.abs_move(x=1, y=1)  # move the tool head to position (1, 1)
-    g.home()  # move the tool head to the origin (0, 0)
-
-By default `mecode` simply prints the generated GCode to stdout. If instead you
-want to generate a file, you can pass a filename and turn off the printing when
-instantiating the `G` object. ::
-
-    g = G(outfile='path/to/file.gcode', print_lines=False)
-
-*NOTE:* `g.teardown()` must be called after all commands are executed if you
-are writing to a file.
-
-The resulting toolpath can be visualized in 3D using the `mayavi` package with
-the `view()` method ::
-
-    g = G()
-    g.meander(10, 10, 1)
-    g.view()
-
-* *Author:* Jack Minardi
-* *Email:* jack@minardi.org
-
-This software was developed by the Lewis Lab at Harvard University and Voxel8 Inc.
-
-"""
-
 import math
 import os
 import sys
@@ -81,14 +34,29 @@ except NameError:
 
 class G(object):
 
-    def __init__(self, outfile=None, print_lines=True, header=None, footer=None,
-                 aerotech_include=True, output_digits=6, direct_write=False,
-                 direct_write_mode='socket', printer_host='localhost',
-                 printer_port=8000, baudrate=250000, two_way_comm=True,
-                 x_axis='X', y_axis='Y', z_axis='Z', extrude=False,
-                 filament_diameter=1.75, layer_height=0.19,
-                 extrusion_width=0.35, extrusion_multiplier=1, setup=True,
-                 lineend='os'):
+    def __init__(self,
+                    outfile=None,
+                    print_lines=True,
+                    header=None,
+                    footer=None,
+                    aerotech_include=True,
+                    output_digits=6,
+                    direct_write=False,
+                    direct_write_mode='socket',
+                    printer_host='localhost',
+                    printer_port=8000,
+                    baudrate=250000,
+                    two_way_comm=True,
+                    x_axis='X',
+                    y_axis='Y',
+                    z_axis='Z',
+                    extrude=False,
+                    filament_diameter=1.75,
+                    layer_height=0.19,
+                    extrusion_width=0.35,
+                    extrusion_multiplier=1,
+                    setup=True,
+                    lineend='os'):
         """
         Parameters
         ----------
@@ -97,6 +65,9 @@ class G(object):
             file.
         print_lines : bool (default: True)
             Whether or not to print the compiled GCode to stdout
+        
+        Other Parameters
+        ----------------
         header : path or None (default: None)
             Optional path to a file containing lines to be written at the
             beginning of the output file
@@ -269,7 +240,6 @@ class G(object):
         with mecode.G(  outfile=self.outfile,
                         print_lines=False,
                         aerotech_include=False) as g:
-            <code block>
         """
         return self
 
@@ -413,8 +383,8 @@ class G(object):
 
     def move(self, x=None, y=None, z=None, rapid=False, color=(0,0,0,0.5), **kwargs):
         """ Move the tool head to the given position. This method operates in
-        relative mode unless a manual call to `absolute` was given previously.
-        If an absolute movement is desired, the `abs_move` method is
+        relative mode unless a manual call to [absolute][mecode.main.G.absolute] was given previously.
+        If an absolute movement is desired, the [abs_move][mecode.main.G.abs_move] method is
         recommended instead.
 
         points : floats
@@ -471,7 +441,7 @@ class G(object):
         self.write(cmd + args)
 
     def abs_move(self, x=None, y=None, z=None, rapid=False, **kwargs):
-        """ Same as `move` method, but positions are interpreted as absolute.
+        """ Same as [move][mecode.main.G.move] method, but positions are interpreted as absolute.
         """
         if self.is_relative:
             self.absolute()
@@ -547,8 +517,6 @@ class G(object):
 
         Parameters
         ----------
-        points : floats
-            Must specify endpoint as kwargs, e.g. x=5, y=5
         direction : str (either 'CW' or 'CCW') (default: 'CW')
             The direction to execute the arc in.
         radius : 'auto' or float (default: 'auto')
@@ -723,7 +691,7 @@ class G(object):
             self._update_current_position(**dims)
 
     def abs_arc(self, direction='CW', radius='auto', **kwargs):
-        """ Same as `arc` method, but positions are interpreted as absolute.
+        """ Same as [arc][mecode.main.G.arc] method, but positions are interpreted as absolute.
         """
         if self.is_relative:
             self.absolute()
@@ -1002,7 +970,7 @@ class G(object):
             self.absolute()
 
     def serpentine(self, L, n_lines, spacing, start='LL', orientation='x', color=(0,0,0,0.5)):
-        """ Generate a square wave meandering/serpentine pattern. Unlike `meander`,
+        """ Generate a square wave meandering/serpentine pattern. Unlike [meander][mecode.main.G.meander],
          will not tweak spacing dimension.
 
         Parameters
@@ -1019,8 +987,6 @@ class G(object):
         orientation : str ('x' or 'y') (default: 'x')
         color : hex string or rgb(a) string
             Specifies a color to be added to color history for viewing.
-        mode : str (either 'auto' or 'manual')
-            If set to auto (default value) will auto correct spacing to fit within x and y dimensions.
 
         Examples
         --------
@@ -1187,6 +1153,7 @@ class G(object):
             Absolute coordinates of spiral center. Helpful when printing in absolute coordinates
 
         Examples
+        --------
 
         >>> # TODO
         
@@ -1275,6 +1242,7 @@ class G(object):
             Absolute coordinates of spiral center. Helpful when printing in absolute coordinates
 
         Examples
+        --------
 
         >>> # TODO
         
@@ -1366,6 +1334,7 @@ class G(object):
             Position of the absolute center of the spiral, useful when starting a spiral at the edge of a completed spiral
 
         Examples
+        --------
 
         >>> # start first spiral, outer diameter of 20, spacing of 1, feedrate of 8
         >>> g.spiral(20,1,8)
@@ -1804,7 +1773,7 @@ class G(object):
         self.extruding = [dispenser, False]
 
     def set_vac(self, com_port, value):
-        """ Same as `set_pressure` method, but for vacuum.
+        """ Same as [set_pressure][mecode.main.G.set_pressure] method, but for vacuum.
         """
         self.write('Call setVac P{} Q{}'.format(com_port, value))
 
@@ -1875,7 +1844,7 @@ class G(object):
         self.write('Call omniSetInt P{}'.format(com_port))
 
     def set_alicat_pressure(self,com_port,value):
-        """ Same as `set_pressure` method, but for Alicat controller.
+        """ Same as [set_pressure][mecode.main.G.set_pressure] method, but for Alicat controller.
         """
         self.write('Call setAlicatPress P{} Q{}'.format(com_port, value))
 
@@ -2308,7 +2277,7 @@ class G(object):
                 plt.savefig(outfile,dpi=500)
     
 
-        elif backend == 'matplotlib':
+        elif backend == 'matplotlib' or backend == '3d':
             if ax is None:
                 fig = plt.figure()
                 ax = fig.add_subplot(projection='3d')
@@ -2364,7 +2333,7 @@ class G(object):
             from mayavi import mlab
             mlab.plot3d(history[:, 0], history[:, 1], history[:, 2])
 
-        elif backend == 'vpython':
+        elif backend == 'vpython' or backend == 'animated':
             import vpython as vp
             import copy
             
