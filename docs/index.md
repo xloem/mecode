@@ -10,50 +10,6 @@ can not convert CAD models to 3D printer ready code. It simply provides a
 convenient, human-readable layer just above GCode. If you often find
 yourself manually writing your own GCode, then mecode is for you.
 
-
-
-<!-- All GCode Methods
------------------
-
-All methods have detailed docstrings and examples.
-
-* `set_home()`
-* `reset_home()`
-* `feed()`
-* `dwell()`
-* `home()`
-* `move()`
-* `move_inc`
-* `abs_move()`
-* `rapid`
-* `abs_rapid`
-* `circle`
-* `arc()`
-* `abs_arc()`
-* `rect()`
-* `round_rect`
-* `meander()`
-* `serpentine`
-* `clip()`
-* `triangular_wave()`
-* `rect_spiral`
-* `square_spiral`
-* `spiral`
-* `gradient_spiral`
-* `purge_meander`
-* `get_axis_pos`
-* `toggle_pressure`
-* `set_pressure`
-* `set_vac`
-* `linear_actuator_on`
-* `linear_actuator_off`
-* `set_valve`
-* `omni_on`
-* `omni_off`
-* `omni_intensity`
-* `set_alicat_pressure`
-* `view` -->
-
 ## Matrix Transforms
 
 A wrapper class, `GMatrix` will run all move and arc commands through a 
@@ -95,21 +51,9 @@ $ pip install -r requirements.txt
 $ python setup.py install
 ```
 
-<!-- Optional Dependencies
----------------------
-The following dependencies are optional, and are only needed for
-visualization. An easy way to install them is to use [conda][1].
-
-* numpy
-* matplotlib
-* vpython
-* mayavi
-
-[1]: https://www.anaconda.com/ -->
 
 ## TODO
 
-- [ ] add formal sphinx documentation
 - [ ] create github page
 - [ ] build out multi-nozzle support
     - [ ] include multi-nozzle support in view method.
@@ -120,6 +64,7 @@ visualization. An easy way to install them is to use [conda][1].
 
 ## Credits
 
-This software was developed by the [Lewis Lab][2] at Harvard University. It is based on Jack Minardi's (jack@minardi.org) codebase (https://github.com/jminardi/mecode) which is not maintained anymore.
+This software was developed by the [Lewis Lab][2] at Harvard University. It is based on Jack Minardi's[^1] codebase (https://github.com/jminardi/mecode) which is no longer maintained.
 
+[^1]: <jack@minardi.org>
 [2]: http://lewisgroup.seas.harvard.edu/

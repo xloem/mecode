@@ -57,7 +57,7 @@ nav:
         - Multilayer Prints: tutorials/multilayer-prints.md
         - UV Curing on-the-fly: tutorials/in-situ-uv-curing.md
         - Multimaterial Printing: tutorials/multimaterial-printing.md
-        - Matrix Transformation: tutorial/matrix-transformations.md
+        - Matrix Transformation: tutorials/matrix-transformations.md
     - About:
       - Release Notes: release-notes.md
       - Contributing: contributing.md
@@ -88,3 +88,4 @@ markdown_extensions:
       alternate_style: true
   - pymdownx.tasklist:
       custom_checkbox: true
+  - footnotes

@@ -1,50 +1,3 @@
-"""
-Mecode
-======
-
-### GCode for all
-
-Mecode is designed to simplify GCode generation. It is not a slicer, thus it
-can not convert CAD models to 3D printer ready code. It simply provides a
-convenient, human-readable layer just above GCode. If you often find
-yourself manually writing your own GCode, then mecode is for you.
-
-Basic Use
----------
-To use, simply instantiate the `G` object and use its methods to trace your
-desired tool path. ::
-
-    from mecode import G
-    g = G()
-    g.move(10, 10)  # move 10mm in x and 10mm in y
-    g.arc(x=10, y=5, radius=20, direction='CCW')  # counterclockwise arc with a radius of 20
-    g.meander(5, 10, spacing=1)  # trace a rectangle meander with 1mm spacing between the passes
-    g.abs_move(x=1, y=1)  # move the tool head to position (1, 1)
-    g.home()  # move the tool head to the origin (0, 0)
-
-By default `mecode` simply prints the generated GCode to stdout. If instead you
-want to generate a file, you can pass a filename and turn off the printing when
-instantiating the `G` object. ::
-
-    g = G(outfile='path/to/file.gcode', print_lines=False)
-
-*NOTE:* `g.teardown()` must be called after all commands are executed if you
-are writing to a file.
-
-The resulting toolpath can be visualized in 3D using the `mayavi` package with
-the `view()` method ::
-
-    g = G()
-    g.meander(10, 10, 1)
-    g.view()
-
-* *Author:* Jack Minardi
-* *Email:* jack@minardi.org
-
-This software was developed by the Lewis Lab at Harvard University and Voxel8 Inc.
-
-"""
-
 import math
 import os
 import sys
@@ -287,7 +240,6 @@ class G(object):
         with mecode.G(  outfile=self.outfile,
                         print_lines=False,
                         aerotech_include=False) as g:
-            <code block>
         """
         return self
 
@@ -565,8 +517,6 @@ class G(object):
 
         Parameters
         ----------
-        points : floats
-            Must specify endpoint as kwargs, e.g. x=5, y=5
         direction : str (either 'CW' or 'CCW') (default: 'CW')
             The direction to execute the arc in.
         radius : 'auto' or float (default: 'auto')
@@ -1037,8 +987,6 @@ class G(object):
         orientation : str ('x' or 'y') (default: 'x')
         color : hex string or rgb(a) string
             Specifies a color to be added to color history for viewing.
-        mode : str (either 'auto' or 'manual')
-            If set to auto (default value) will auto correct spacing to fit within x and y dimensions.
 
         Examples
         --------
