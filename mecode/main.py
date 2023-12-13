@@ -81,14 +81,29 @@ except NameError:
 
 class G(object):
 
-    def __init__(self, outfile=None, print_lines=True, header=None, footer=None,
-                 aerotech_include=True, output_digits=6, direct_write=False,
-                 direct_write_mode='socket', printer_host='localhost',
-                 printer_port=8000, baudrate=250000, two_way_comm=True,
-                 x_axis='X', y_axis='Y', z_axis='Z', extrude=False,
-                 filament_diameter=1.75, layer_height=0.19,
-                 extrusion_width=0.35, extrusion_multiplier=1, setup=True,
-                 lineend='os'):
+    def __init__(self,
+                    outfile=None,
+                    print_lines=True,
+                    header=None,
+                    footer=None,
+                    aerotech_include=True,
+                    output_digits=6,
+                    direct_write=False,
+                    direct_write_mode='socket',
+                    printer_host='localhost',
+                    printer_port=8000,
+                    baudrate=250000,
+                    two_way_comm=True,
+                    x_axis='X',
+                    y_axis='Y',
+                    z_axis='Z',
+                    extrude=False,
+                    filament_diameter=1.75,
+                    layer_height=0.19,
+                    extrusion_width=0.35,
+                    extrusion_multiplier=1,
+                    setup=True,
+                    lineend='os'):
         """
         Parameters
         ----------
@@ -97,6 +112,9 @@ class G(object):
             file.
         print_lines : bool (default: True)
             Whether or not to print the compiled GCode to stdout
+        
+        Other Parameters
+        ----------------
         header : path or None (default: None)
             Optional path to a file containing lines to be written at the
             beginning of the output file
@@ -413,8 +431,8 @@ class G(object):
 
     def move(self, x=None, y=None, z=None, rapid=False, color=(0,0,0,0.5), **kwargs):
         """ Move the tool head to the given position. This method operates in
-        relative mode unless a manual call to `absolute` was given previously.
-        If an absolute movement is desired, the `abs_move` method is
+        relative mode unless a manual call to [absolute][mecode.main.G.absolute] was given previously.
+        If an absolute movement is desired, the [abs_move][mecode.main.G.abs_move] method is
         recommended instead.
 
         points : floats
@@ -471,7 +489,7 @@ class G(object):
         self.write(cmd + args)
 
     def abs_move(self, x=None, y=None, z=None, rapid=False, **kwargs):
-        """ Same as `move` method, but positions are interpreted as absolute.
+        """ Same as [move][mecode.main.G.move] method, but positions are interpreted as absolute.
         """
         if self.is_relative:
             self.absolute()
@@ -723,7 +741,7 @@ class G(object):
             self._update_current_position(**dims)
 
     def abs_arc(self, direction='CW', radius='auto', **kwargs):
-        """ Same as `arc` method, but positions are interpreted as absolute.
+        """ Same as [arc][mecode.main.G.arc] method, but positions are interpreted as absolute.
         """
         if self.is_relative:
             self.absolute()
@@ -1002,7 +1020,7 @@ class G(object):
             self.absolute()
 
     def serpentine(self, L, n_lines, spacing, start='LL', orientation='x', color=(0,0,0,0.5)):
-        """ Generate a square wave meandering/serpentine pattern. Unlike `meander`,
+        """ Generate a square wave meandering/serpentine pattern. Unlike [meander][mecode.main.G.meander],
          will not tweak spacing dimension.
 
         Parameters
@@ -1187,6 +1205,7 @@ class G(object):
             Absolute coordinates of spiral center. Helpful when printing in absolute coordinates
 
         Examples
+        --------
 
         >>> # TODO
         
@@ -1275,6 +1294,7 @@ class G(object):
             Absolute coordinates of spiral center. Helpful when printing in absolute coordinates
 
         Examples
+        --------
 
         >>> # TODO
         
@@ -1366,6 +1386,7 @@ class G(object):
             Position of the absolute center of the spiral, useful when starting a spiral at the edge of a completed spiral
 
         Examples
+        --------
 
         >>> # start first spiral, outer diameter of 20, spacing of 1, feedrate of 8
         >>> g.spiral(20,1,8)
@@ -1804,7 +1825,7 @@ class G(object):
         self.extruding = [dispenser, False]
 
     def set_vac(self, com_port, value):
-        """ Same as `set_pressure` method, but for vacuum.
+        """ Same as [set_pressure][mecode.main.G.set_pressure] method, but for vacuum.
         """
         self.write('Call setVac P{} Q{}'.format(com_port, value))
 
@@ -1875,7 +1896,7 @@ class G(object):
         self.write('Call omniSetInt P{}'.format(com_port))
 
     def set_alicat_pressure(self,com_port,value):
-        """ Same as `set_pressure` method, but for Alicat controller.
+        """ Same as [set_pressure][mecode.main.G.set_pressure] method, but for Alicat controller.
         """
         self.write('Call setAlicatPress P{} Q{}'.format(com_port, value))
 
