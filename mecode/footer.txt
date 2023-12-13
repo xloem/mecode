@@ -294,7 +294,7 @@ DFS runPump
         COMMINIT $hFile, "baud=115200 parity=N data=8 stop=1"
         COMMSETTIMEOUT $hFile, -1, -1, 1000
         
-        FILEWRITENOTERM $hFile "irun\x0D"
+        FILEWRITENOTERM $hFile "run\x0D"
         FILECLOSE $hFile
 
 ENDDFS
@@ -307,7 +307,7 @@ DFS stopPump
         COMMINIT $hFile, "baud=115200 parity=N data=8 stop=1"
         COMMSETTIMEOUT $hFile, -1, -1, 1000
         
-        FILEWRITENOTERM $hFile "stop\x0D"
+        FILEWRITENOTERM $hFile "stp\x0D"
         FILECLOSE $hFile
 
 ENDDFS
