@@ -58,11 +58,16 @@ nav:
         - UV Curing on-the-fly: tutorials/in-situ-uv-curing.md
         - Multimaterial Printing: tutorials/multimaterial-printing.md
         - Matrix Transformation: tutorials/matrix-transformations.md
+        - Advanced Visualization: tutorials/visualization.md
     - About:
       - Release Notes: release-notes.md
       - Contributing: contributing.md
       - License: license.md
-  - API Reference: api-reference.md
+  - API Reference:
+    - mecode: api-reference/mecode.md
+    - matrix: api-reference/matrix.md
+    - printer: api-reference/printer.md
+    - profilometer: api-reference/profilometer_parse.md
 plugins:
   - search
   - mkdocstrings:
@@ -89,3 +94,9 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
   - footnotes
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+extra:
+  version:
+    provider: mike

@@ -32,8 +32,8 @@ is open to whoever wants to implement it.
 
 #### Write Documentation
 
-[`mecode`](github.com/rtellez700/mecode) could always use more documentation, whether
-as part of the official [`mecode`](github.com/rtellez700/mecode) docs, in docstrings,
+[`mecode`](https://github.com/rtellez700/mecode) could always use more documentation, whether
+as part of the official [`mecode`](https://github.com/rtellez700/mecode) docs, in docstrings,
 or even on the web in blog posts, articles, and such.
 
 #### Submit Feedback

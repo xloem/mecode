@@ -1,6 +1,5 @@
 site
 .delete
-site
 
 *.log
 *.py[cod]
