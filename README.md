@@ -44,92 +44,6 @@ with G(outfile='file.gcode') as g:
 
 When the `with` block is exited, `g.teardown()` will be automatically called.
 
-The resulting toolpath can be visualized in 3D using the `mayavi` or `matplotlib`
-package with the `view()` method:
-
-```python
-g = G()
-g.meander(10, 10, 1)
-g.view()
-```
-
-The graphics backend can be specified when calling the `view()` method and providing one of the following as the `backend`:
-- `2d` -- 2D visualization figure
-- `matplotlib` -- 3D visualization figure
-- `vpython` -- animated rendering
-
-E.g.
-```python
-g.view('matplotlib')
-```
-
-All GCode Methods
------------------
-
-All methods have detailed docstrings and examples.
-
-* `set_home()`
-* `reset_home()`
-* `feed()`
-* `dwell()`
-* `home()`
-* `move()`
-* `move_inc`
-* `abs_move()`
-* `rapid`
-* `abs_rapid`
-* `circle`
-* `arc()`
-* `abs_arc()`
-* `rect()`
-* `round_rect`
-* `meander()`
-* `serpentine`
-* `clip()`
-* `triangular_wave()`
-* `rect_spiral`
-* `square_spiral`
-* `spiral`
-* `gradient_spiral`
-* `purge_meander`
-* `get_axis_pos`
-* `toggle_pressure`
-* `set_pressure`
-* `set_vac`
-* `linear_actuator_on`
-* `linear_actuator_off`
-* `set_valve`
-* `omni_on`
-* `omni_off`
-* `omni_intensity`
-* `set_alicat_pressure`
-* `view`
-
-Matrix Transforms
------------------
-
-A wrapper class, `GMatrix` will run all move and arc commands through a 
-2D transformation matrix before forwarding them to `G`.
-
-To use, simply instantiate a `GMatrix` object instead of a `G` object:
-
-```python
-g = GMatrix()
-g.push_matrix()      # save the current transformation matrix on the stack.
-g.rotate(math.pi/2)  # rotate our transformation matrix by 90 degrees.
-g.move(0, 1)         # same as moves (1,0) before the rotate.
-g.pop_matrix()       # revert to the prior transformation matrix.
-```
-
-The transformation matrix is 2D instead of 3D to simplify arc support.
-
-Renaming Axes
--------------
-
-When working with a machine that has more than one Z-Axis, it is
-useful to use the `rename_axis()` function. Using this function your
-code can always refer to the vertical axis as 'Z', but you can dynamically
-rename it.
 
 Installation
 ------------
@@ -149,17 +63,11 @@ $ pip install -r requirements.txt
 $ python setup.py install
 ```
 
-Optional Dependencies
----------------------
-The following dependencies are optional, and are only needed for
-visualization. An easy way to install them is to use [conda][1].
+Documentation
+-------------
 
-* numpy
-* matplotlib
-* vpython
-* mayavi
+Full documentation can be found at [https://rtellez700.github.io/mecode/](https://rtellez700.github.io/mecode/)
 
-[1]: https://www.anaconda.com/
 
 TODO
 ----
