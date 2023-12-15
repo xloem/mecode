@@ -54,3 +54,7 @@ plt.show()
 
 ### Result: example using matplotlib patches.Rectangle 
 ![](/mecode/assets/images/visualization_example.png)
+
+!!! bug
+
+    Currently viewing multiaxis printing is not supported. Instead you will see each layer separated by the `offset` distance defined above. In practice, this gcode will generate a single cylinder.
