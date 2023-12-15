@@ -54,6 +54,14 @@ yourself manually writing your own GCode, then mecode is for you.
 
     [:octicons-arrow-right-24: Visualizations](tutorials/visualization.md)
 
+-   :material-serial-port:{ .lg .middle } __Serial Communication__
+
+    ---
+
+    With the option `direct_write=True`, a serial connection to a Printer can be established via USB serial at a virtual COM port (e.g., RS-232).
+
+    [:octicons-arrow-right-24: Direct connection](tutorials/serial-communication.md)
+
 -    :material-scale-balance:{ .lg .middle } __Open Source, MIT__
 
     ---
