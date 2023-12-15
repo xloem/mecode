@@ -1,10 +1,10 @@
 site_name: mecode
-# site_description: Modern, extensible Python project management
-# site_author: Rodrigo Telles
-# site_url: https://hatch.pypa.io
-# repo_name: pypa/hatch
-# repo_url: https://github.com/pypa/hatch
-# edit_uri: blob/master/docs
+site_description: Modern, Python gcode toolpath generation.
+site_author: Rodrigo Telles
+site_url: https://rtellez700.github.io/mecode/
+repo_name: pypa/mecode
+repo_url: https://github.com/rtellez700/mecode/
+edit_uri: ""
 copyright: 'Copyright &copy; 2014-present'
 
 docs_dir: docs
@@ -16,7 +16,7 @@ theme:
   favicon: assets/images/logo.svg
   icon:
     repo: fontawesome/brands/github-alt
-    logo: material/egg
+    logo: material/alpha-m-box-outline
     annotation: material/arrow-right-circle
   font:
     text: Roboto

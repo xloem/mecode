@@ -17,6 +17,7 @@ yourself manually writing your own GCode, then mecode is for you.
   - visualization tools
  -->
 
+## Why [`mecode`](#)?
 <div class="grid cards" markdown>
 
 -   :material-clock-fast:{ .lg .middle } __Set up in 5 minutes__
@@ -28,27 +29,28 @@ yourself manually writing your own GCode, then mecode is for you.
 
     [:octicons-arrow-right-24: Installation](intall.md)
 
--   :fontawesome-brands-markdown:{ .lg .middle } __Matrix Transformation__
+-   :material-format-rotate-90:{ .lg .middle } __Matrix Transformation__
 
     ---
 
-    Focus on your content and generate a responsive and searchable static site
+    [`mecode`](#) is capable of transforming toolpaths (e.g., rotation matrices).
 
     [:octicons-arrow-right-24: Transforms](tutorials/matrix-transformations.md)
 
--   :material-format-font:{ .lg .middle } __Multimaterial Support__
+    
+-   :material-multicast:{ .lg .middle } __Multimaterial Support__
 
     ---
 
-    Change the colors, fonts, language, icons, logo and more with a few lines
+    Multimaterial support enabled on multiaxis printers via [`rename_axis`](/api-reference/mecode/#mecode.main.G.rename_axis)
 
-    [:octicons-arrow-right-24: Multimaterial](tutorials/multimaterial-printing.md)
+    [:octicons-arrow-right-24: Multimaterial example](tutorials/multimaterial-printing.md)
 
--   :material-scale-balance:{ .lg .middle } __Visualization__
+-   :material-chart-scatter-plot-hexbin:{ .lg .middle } __Visualization__
 
     ---
 
-    Material for MkDocs is licensed under MIT and available on [GitHub]
+    Gcode toolpath visualization enabled by [matplotlib](https://matplotlib.org/) with color coding support for complex prints.
 
     [:octicons-arrow-right-24: Visualizations](tutorials/visualization.md)
 
@@ -56,7 +58,7 @@ yourself manually writing your own GCode, then mecode is for you.
 
     ---
 
-    Material for MkDocs is licensed under MIT and available on [GitHub]
+    [`mecode`](#) is licensed under MIT and available on [GitHub](https://github.com/rtellez700/mecode) or the [License tab](license.md)
 
     [:octicons-arrow-right-24: License](#)
 

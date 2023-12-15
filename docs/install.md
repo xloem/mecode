@@ -21,8 +21,10 @@ To download git visit [git-scm.com/downloads](https://git-scm.com/downloads).
 
 
 ## Configure virtual environment
+!!! info "Although no virtual environment is required to install `mecode`, it is highly recommended to avoid dependency issues when working with multiple python packages."
+
 === "Conda"
-    Install latest version of miniconda [https://docs.conda.io/projects/miniconda/en/latest/](https://docs.conda.io/projects/miniconda/en/latest/)
+    Install latest version of [miniconda](https://docs.conda.io/projects/miniconda/en/latest/).
 
     !!! Note
         If prompted to add conda to path, the answer is almost always yes. If you're not sure, check yes to avoid `conda not found` issues down the road.
@@ -45,7 +47,7 @@ To download git visit [git-scm.com/downloads](https://git-scm.com/downloads).
 
 
 === "Mamba"
-    Install latest version of Mamba [https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html)
+    Install latest version of [Mamba](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html).
 
     Create a new environment for working with `mecode`. E.g., to create a virtual environment `3dp`
 

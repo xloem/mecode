@@ -5,12 +5,23 @@ desired tool path.
 
 ```python
 from mecode import G
+
 g = G()
-g.move(10, 10)  # move 10mm in x and 10mm in y
-g.arc(x=10, y=5, radius=20, direction='CCW')  # counterclockwise arc with a radius of 20
-g.meander(5, 10, spacing=1)  # trace a rectangle meander with 1mm spacing between passes
-g.abs_move(x=1, y=1)  # move the tool head to position (1, 1)
-g.home()  # move the tool head to the origin (0, 0)
+
+# move 10mm in x and 10mm in y
+g.move(10, 10)  (1)
+
+# counterclockwise arc with a radius of 20
+g.arc(x=10, y=5, radius=20, direction='CCW')
+
+# trace a rectangle meander with 1mm spacing between passes
+g.meander(5, 10, spacing=1)
+
+# move the tool head to position (1, 1)
+g.abs_move(x=1, y=1)  
+
+# move the tool head to the origin (0, 0)
+g.home()
 ```
 
 By default `mecode` simply prints the generated GCode to stdout. If instead you
@@ -32,8 +43,8 @@ with G(outfile='file.gcode') as g:
 
 When the `with` block is exited, `g.teardown()` will be automatically called.
 
-The resulting toolpath can be visualized in 3D using the `mayavi` or `matplotlib`
-package with the `view()` method:
+The resulting toolpath can be visualized in 3D using the [`matplotlib`](https://matplotlib.org/) or [`vpython`](https://vpython.org/)
+package with the [`view()`](/mecode/api-reference/mecode/#mecode.main.G.view) method:
 
 ```python
 g = G()
@@ -42,7 +53,7 @@ g.view()
 ```
 
 ## Visualization
-The graphics backend can be specified when calling the `view()` method and providing one of the following as the `backend`:
+The graphics backend can be specified when calling the `view()` method and providing one of the following as the `backend` argument:
 
 <div class="annotate" markdown>
 - `2d` -- 2D visualization figure
