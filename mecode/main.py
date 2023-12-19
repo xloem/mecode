@@ -410,10 +410,12 @@ class G(object):
             msg = 'WARNING! no print speed has been set. Will default to previously used print speed.'
             self.write('; ' + msg)
             
-            raise Exception('''
+            warnings.warn('''
                             >>> No print speed has been specified
                             e.g., to set print speed to 15 mm/s use:
                             \t\t g.feed(15)
+                            
+                            If this is not the intended behavior please set a print speed. You can ignore this if your testing out features such as testing serial communication etc.
                             ''')
 
         if self.extrude is True and 'E' not in kwargs.keys():
@@ -1852,10 +1854,12 @@ class G(object):
         '''Run pump with internally stored settings.
             Note: to run a pump, first call `set_rate` then call `run`'''
         self.write(f'Call runPump P{com_port}')
+        self.extruding = [com_port, True]
     
     def stop_pump(self, com_port):
         '''Stops the pump'''
         self.write(f'Call stopPump P{com_port}')
+        self.extruding = [com_port, False]
 
 
     def calc_CRC8(self,data):
