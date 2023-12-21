@@ -72,14 +72,15 @@ Full documentation can be found at [https://rtellez700.github.io/mecode/](https:
 TODO
 ----
 
-- [ ] add formal sphinx documentation
-- [ ] create github page
+- [x] add formal documentation
+- [x] create github page
 - [ ] build out multi-nozzle support
-    - [ ] include multi-nozzle support in view method.
+    - [ ] include multi-nozzle support in view method
 - [ ] add ability to read current status of aerotech
   - [ ] turn off omnicure after aborted runs
 - [ ] add support for identifying part bounds and specifying safe post print "parking"
-
+- [ ] add support for auto-generating aerotech specific functions only if needed.
+  - [ ] add support for easily adding new serial devices: (1) pyserial-based, (2) aerotech, or (3) other??
 
 Credits
 -------
