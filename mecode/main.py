@@ -2849,12 +2849,13 @@ class G(object):
         z = self._current_position['z']
 
         self.position_history.append((x, y, z))
-        if color[0] > 1 and isinstance(color[0], float):
-            color[0] = color[0]/255
-        if color[1] > 1 and isinstance(color[0], float):
-            color[1] = color[1]/255
-        if color[2] > 1 and isinstance(color[0], float):
-            color[2] = color[2]/255
+        # TODO: NOT ACCOUNTING FOR STRING COLORS
+        # if color[0] > 1 and isinstance(color[0], float):
+        #     color[0] = color[0]/255
+        # if color[1] > 1 and isinstance(color[0], float):
+        #     color[1] = color[1]/255
+        # if color[2] > 1 and isinstance(color[0], float):
+        #     color[2] = color[2]/255
 
         self.color_history.append(color)
 
