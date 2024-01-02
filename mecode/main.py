@@ -1672,6 +1672,209 @@ class G(object):
         self.write('FREERUN a 0')
         self.write('FREERUN b 0')
 
+    def log_pile(self, L, W, H, RW, D_N, print_speed, com_ports, P, print_height=None, lead_in=0, dwell=0, jog_speed=10, jog_height=5):
+        """ A solution for a 90° log pile lattice
+
+        Parameters
+        ----------
+        L : float
+            Length of log pile base
+        W : float
+            Width of log pile base
+        H : float
+            Height of log pile base
+        RW : float
+            Road width - spacing between filament centers
+        D_N : float
+            Nozzle diameter
+        print_speed : float
+            Printing speed
+        com_ports : dict
+            Dictionary of com_ports for pressure `P` and omnicure `UV`.
+        P : float
+            Printing pressure
+        print_height : float
+            Spacing between z-layers. If not provided, the default is 80% of `D_N` to provide better adhesion
+
+        Examples
+        --------
+        
+        # printing a 10 mm (L) x 15 mm (W) x 5 mm (H) log pile with a road width of 1.4 mm and nozzle size of 0.7 mm (700 um)
+        #   extruding at 55 psi pressure via com_port 5
+        >>> g.log_pile(10, 15, 1.4, 0.7, 1, {'P': 5}, 55)
+        
+        !!! note
+
+            Currently, this assumes you are using a pressure-based printing method (e.g., Nordson).
+            In the next version, this will be changed so that any arbitrary extruding source can be used.
+
+        """
+        COLORS = {
+            'pre': (1,1,1),#(1,0,0,0),
+            'post': (1,1,1),#(1,0,0,0),
+            'even': (0,0,0, 1),
+            'odd': (0,0,0, 1),
+            'offset': (1,1,1,0)
+            # 'post': (25/255,138/255,72/255,0.3)
+            # 'even': (45/255, 36/255, 66/255, 1),
+            # 'odd': (248/255, 214/255, 65/255, 1)
+        }
+
+        dz = print_height if print_height is None else D_N*0.8 # [mm] z-layer spacing
+
+        z_layers = int(H / dz)
+        n_lines_L = int(np.floor(W/RW + 1))
+        n_lines_W = int(np.floor(L/RW + 1))
+
+        offset_L = L - (n_lines_W-1)*RW
+        offset_W = W - (n_lines_L-1)*RW
+        extra_offset = 5 # mm
+
+        print(f'n_lines_L={n_lines_L:.1f} and offset_L={offset_L:.3f}')
+        print(f'n_lines_W={n_lines_W:.1f} and offset_W={offset_W:.3f}')
+        print(f'RW = {RW:.3f} = {RW/D_N:.3f}*d_N')
+        print(f'z_layers = {z_layers:.1f}')
+        print(f'rho = {2*D_N/ RW :.3f}')
+
+        '''HELPER FUNCTIONS'''
+
+        def initial_offset(start, orientation, offset):
+            # LL
+            if start == 'LL' and orientation == 'x':
+                self.move(y=+offset/2, color=COLORS['pre'])
+            elif start == 'LL' and orientation == 'y':
+                self.move(x=+offset/2, color=COLORS['pre'])
+
+            # UL
+            elif start == 'UL' and orientation == 'x':
+                self.move(y=-offset/2, color=COLORS['pre'])
+            elif start == 'UL' and orientation == 'y':
+                self.move(x=+offset/2, color=COLORS['pre'])
+            
+            # UR
+            elif start == 'UR' and orientation == 'x':
+                self.move(y=-offset/2, color=COLORS['pre'])
+            elif start == 'UR' and orientation == 'y':
+                self.move(x=-offset/2, color=COLORS['pre'])
+
+            # LR
+            elif start == 'LR' and orientation == 'x':
+                self.move(y=+offset/2, color=COLORS['pre'])
+            elif start == 'LR' and orientation == 'y':
+                self.move(x=-offset/2, color=COLORS['pre'])
+
+        def post_offset(next_start, next_orientation, offset):
+            # LL
+            if next_start == 'LL' and next_orientation == 'x':
+                self.move(y=-extra_offset, color=COLORS['post']) 
+                self.move(x=-offset/2, color=COLORS['offset'])
+                self.move(y=extra_offset, color=COLORS['post'])
+            elif next_start == 'LL' and next_orientation == 'y':
+                self.move(x=-extra_offset, color=COLORS['post'])
+                self.move(y=-offset/2, color=COLORS['offset'])
+                self.move(x=-extra_offset, color=COLORS['post'])
+
+            # UL
+            elif next_start == 'UL' and next_orientation == 'x':
+                self.move(y=extra_offset, color=COLORS['post'])
+                self.move(x=+offset/2, color=COLORS['offset'])
+                self.move(y=-extra_offset, color=COLORS['post'])
+            elif next_start == 'UL' and next_orientation == 'y':
+                self.move(x=-extra_offset, color=COLORS['post'])
+                self.move(y=+offset/2, color=COLORS['offset'])
+                self.move(x=extra_offset, color=COLORS['post'])
+            
+            # UR
+            elif next_start == 'UR' and next_orientation == 'x':
+                self.move(y=extra_offset, color=COLORS['post'])
+                self.move(x=+offset/2, color=COLORS['offset'])
+                self.move(y=-extra_offset, color=COLORS['post'])
+            elif next_start == 'UR' and next_orientation == 'y':
+                self.move(x=extra_offset, color=COLORS['post'])
+                self.move(y=+offset/2, color=COLORS['offset'])
+                self.move(x=-extra_offset, color=COLORS['post'])
+
+            # LR
+            elif next_start == 'LR' and next_orientation == 'x':
+                self.move(y=-extra_offset, color=COLORS['post'])
+                self.move(x=+offset/2, color=COLORS['offset'])
+                self.move(y=extra_offset, color=COLORS['post'])
+            elif next_start == 'LR' and next_orientation == 'y':
+                self.move(x=extra_offset, color=COLORS['post'])
+                self.move(y=-offset/2, color=COLORS['offset'])
+                self.move(x=-extra_offset, color=COLORS['post'])
+
+            self.write('G92 X0 Y0')
+        self.write('; >>> CHANGE PRINT SPEED IN THE FOLLOWING LINE ([=] mm/s) <<<')
+        self.feed(print_speed)
+        self.write('; >>> CAN CHANGE LEAD IN LENGTH HERE <<<')
+        self.move(x=lead_in, color=(1,0,0,0.5)) # lead in
+
+        self.write('; >>> CHANGE PRINT PRINT PRESSURE IN FOLLOWING LINE (0 -> 100, res=0.1) <<<')
+        self.set_pressure(com_ports['P'], P)
+
+        self.toggle_pressure(com_ports['P'])   # ON
+        self.write('; >>> CHANGE INITIAL DWELL IN THE FOLLOWING LINE ([=] seconds) <<<')
+        self.dwell(dwell)
+
+        n_lines_list = [n_lines_L, n_lines_W]
+
+        ''' START '''
+        orientations = ['x','y']
+        for j in range(z_layers):
+            color = COLORS['even'] if j%2==0 else COLORS['odd']
+            n_lines_local = n_lines_list[j%2]
+            offset_local = offset_W if j%2==0 else offset_L
+
+            # if both even-even or odd-odd
+            if n_lines_list[0]%2 == n_lines_list[1]%2:
+                if n_lines_local % 2 == 0: # if even
+                    start_list = ['LL', 'UL', 'UR', 'LR']
+                else:
+                    # orientations = ['x','y']
+                    start_list = ['LL', 'UR']*2
+            # if even-odd
+            elif n_lines_list[0]%2 ==0 and n_lines_list[1]%2==1:
+                start_list = ['LL', 'UL', 'LR', 'UR']
+            # if odd-even
+            elif n_lines_list[0]%2 ==1 and n_lines_list[1]%2==0:
+                start_list = ['LL', 'UR', 'UL', 'LR']
+
+
+            self.write(f'; >>>  START LAYER #{j+1} <<<')
+            start = start_list[j%4]
+            orientation = orientations[j%2]
+
+            next_start = start_list[(j+1)%4]
+            next_orientation = orientations[(j+1)%2]
+
+            initial_offset(start, orientation, offset_local)
+
+            # print(start,orientation, ' --> ', next_start, next_orientation)
+
+            if j%2==0: # runs first
+                # print(f'> serpentine from {start} towards {orientation}')
+                self.serpentine(L, n_lines_local, RW, start, orientation, color=color)
+            else:
+                # print(f'> serpentine from {start} towards {orientation}')
+                self.serpentine(W, n_lines_local, RW, start, orientation, color=color)
+
+            post_offset(next_start, next_orientation, offset_local)
+
+            self.move(z=+dz)
+            self.write(f'; >>>  END LAYER #{j+1} <<<')
+
+            ''' STOP '''
+
+            self.toggle_pressure(com_ports['P'])   # OFF
+
+            # move away from lattice
+            self.write('; MOVE AWAY FROM PRINT')
+            self.feed(jog_speed)
+            self.move(z=jog_height)
+            self.abs_move(0, 0)
+            self.move(z=-jog_height - z_layers*dz)
+
     # AeroTech Specific Functions  ############################################
 
     def get_axis_pos(self, axis):
