@@ -1699,8 +1699,7 @@ class G(object):
         Examples
         --------
         
-        # printing a 10 mm (L) x 15 mm (W) x 5 mm (H) log pile with a road width of 1.4 mm and nozzle size of 0.7 mm (700 um)
-        #   extruding at 55 psi pressure via com_port 5
+        Printing a 10 mm (L) x 15 mm (W) x 5 mm (H) log pile with a road width of 1.4 mm and nozzle size of 0.7 mm (700 um) extruding at 55 psi pressure via com_port 5
         >>> g.log_pile(10, 15, 1.4, 0.7, 1, {'P': 5}, 55)
         
         !!! note
