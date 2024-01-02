@@ -256,7 +256,8 @@ class G(object):
 
         Example
         -------
-        >>> # set the current position to X=0, Y=0
+        
+        set the current position to X=0, Y=0
         >>> g.set_home(0, 0)
 
         """
@@ -1719,7 +1720,7 @@ class G(object):
             # 'odd': (248/255, 214/255, 65/255, 1)
         }
 
-        dz = print_height if print_height is None else D_N*0.8 # [mm] z-layer spacing
+        dz =  D_N*0.8 if print_height is None else print_height # [mm] z-layer spacing
 
         z_layers = int(H / dz)
         n_lines_L = int(np.floor(W/RW + 1))
