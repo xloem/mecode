@@ -254,8 +254,8 @@ class G(object):
     def set_home(self, x=None, y=None, z=None, **kwargs):
         """ Set the current position to the given position without moving.
 
-        Example
-        -------
+        Examples
+        --------
         
         set the current position to X=0, Y=0
         >>> g.set_home(0, 0)
