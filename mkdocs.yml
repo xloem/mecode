@@ -59,6 +59,8 @@ nav:
         - Multimaterial Printing: tutorials/multimaterial-printing.md
         - Matrix Transformation: tutorials/matrix-transformations.md
         - Advanced Visualization: tutorials/visualization.md
+    - Learn:
+      - Under the hood: learn.md
     - About:
       - Release Notes: release-notes.md
       - Contributing: contributing.md

@@ -2,8 +2,10 @@ import math
 import os
 import sys
 import numpy as np
+import copy
 from collections import defaultdict
 import warnings 
+import matplotlib.colors as mcolors
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -137,21 +139,37 @@ class G(object):
         self.y_axis = y_axis
         self.z_axis = z_axis
 
-        self._current_position = defaultdict(float)
-        self.is_relative = True
-
         self.extrude = extrude
         self.filament_diameter = filament_diameter
         self.layer_height = layer_height
         self.extrusion_width = extrusion_width
         self.extrusion_multiplier = extrusion_multiplier
 
+        self.history = [{
+            'REL_MODE': True,
+            'ACCEL' : 2500,
+            'DECEL' : 2500,
+            # 'P' : PRESSURE,
+            # 'P_COM_PORT': P_COM_PORT,
+            'PRINTING': {}, #{'Call togglePress': {'printing': False, 'value': 0}},
+            'PRINT_SPEED': 0,
+            'COORDS': (0,0,0),
+            'ORIGIN': (0,0,0),
+            'CURRENT_POSITION': {'X': 0, 'Y': 0, 'Z': 0},
+            # 'VARIABLES': VARIABLES
+            'COLOR': None
+        }]
+
+        self._current_position = defaultdict(float)
+        self.is_relative = True
         self.position_history = [(0, 0, 0)]
         self.color_history = [(0, 0, 0)]
         self.speed = 0
         self.speed_history = []
-        self.extruding = [None,False]
+        self.extruding = [None, False, 0] # source, if_printing, printing_value
         self.extruding_history = []
+        self.extrusion_state = {}#defaultdict()
+
         self.print_time = 0
         self.version = None
 
@@ -189,11 +207,14 @@ class G(object):
         from packaging import version
 
         def read_version_from_setup():
-            import pkg_resources  # part of setuptools
+            try:
+                import pkg_resources  # part of setuptools
 
-            version = pkg_resources.require("mecode")[0].version
-            
-            return version
+                version = pkg_resources.require("mecode")[0].version
+                
+                return version
+            except:
+                return None
 
         def read_version_from_github(username, repo, path='setup.py'):
             # GitHub raw content URL
@@ -229,8 +250,10 @@ class G(object):
             self.version = local_package_version
             print(f"\nRunning mecode v{local_package_version}")
 
-        if version.parse(local_package_version) < version.parse(remote_package_version):
-            print(f"A new mecode version is available. To upgrade to the latest version run:\n\t>>> pip install git+https://github.com/rtellez700/mecode.git --upgrade")
+        # confirm that a version is already installed first
+        if local_package_version is not None and remote_package_version is not None:
+            if version.parse(local_package_version) < version.parse(remote_package_version):
+             print("A new mecode version is available. To upgrade to the latest version run:\n\t>>> pip install git+https://github.com/rtellez700/mecode.git --upgrade")
             
     def __enter__(self):
         """
@@ -439,6 +462,10 @@ class G(object):
 
         self._update_current_position(x=x, y=y, z=z, color=color, **kwargs)
         self._update_print_time(x,y,z)
+        # new_state = self.history[-1].copy()
+        # new_state['COORDS'] = (x, y, z)
+        # new_state['CURRENT_POSITION'] = {'X': self._current_position['x'], 'Y': self._current_position['y'], 'Z': self._current_position['z']}
+        # self.history.append(new_state)
         args = self._format_args(x, y, z, **kwargs)
         cmd = 'G0 ' if rapid else 'G1 '
         self.write(cmd + args)
@@ -1910,10 +1937,21 @@ class G(object):
 
         """
         self.write('Call togglePress P{}'.format(com_port))
-        if self.extruding[0] == com_port:
-            self.extruding = [com_port, not self.extruding[1]]
+
+        if com_port not in self.extrusion_state.keys():
+            self.extrusion_state[com_port] = {'printing': True, 'value': 1}
+        # if extruding source HAS been specified
         else:
-            self.extruding = [com_port,True]
+            self.extrusion_state[com_port] = {
+                'printing': not self.extrusion_state[com_port]['printing'],
+                'value':  round(self.extrusion_state[com_port]['value'], 1) if not self.extrusion_state[com_port]['printing'] else 0
+            }
+
+        # legacy code
+        if self.extruding[0] == com_port:
+            self.extruding = [com_port, not self.extruding[1], self.extruding[2] if not self.extruding[1] else 0]
+        else:
+            self.extruding = [com_port, True, self.extruding[2]]
 
     def set_pressure(self, com_port, value):
         """ Sets pressure on Nordson Ultimus V Pressure Controllers.
@@ -1930,7 +1968,21 @@ class G(object):
         >>> g.set_pressure(com_port=3, value=50)
 
         """
-        self.write('Call setPress P{} Q{}'.format(com_port, value))
+
+        if com_port not in self.extrusion_state.keys():
+            self.extrusion_state[com_port] = {'printing': False, 'value': round(value, 1)}
+        else:
+            self.extrusion_state[com_port] = {
+                'printing': self.extrusion_state[com_port]['printing'],
+                'value':  round(value, 1)
+            }
+
+        # legacy code
+        if self.extruding[0] == com_port:
+            self.extruding = [com_port, self.extruding[1], value if self.extruding else 0]
+        else:
+            self.extruding = [com_port, self.extruding[1], value if self.extruding else 0]
+        self.write(f'Call setPress P{com_port} Q{value:.2f}')
 
     def linear_actuator_on(self, speed, dispenser):
         ''' Sets Aerotech (or similar) linear actuator speed and ON.
@@ -2057,12 +2109,12 @@ class G(object):
         '''Run pump with internally stored settings.
             Note: to run a pump, first call `set_rate` then call `run`'''
         self.write(f'Call runPump P{com_port}')
-        self.extruding = [com_port, True]
+        self.extruding = [com_port, True, 1]
     
     def stop_pump(self, com_port):
         '''Stops the pump'''
         self.write(f'Call stopPump P{com_port}')
-        self.extruding = [com_port, False]
+        self.extruding = [com_port, False, 0]
 
 
     def calc_CRC8(self,data):
@@ -2387,7 +2439,7 @@ class G(object):
 
     def view(self, backend='matplotlib', outfile=None, hide_travel=False,color_on=True, nozzle_cam=False,
              fast_forward = 3, framerate = 60, nozzle_dims=[1.0,20.0], 
-             substrate_dims=[0.0,0.0,-1.0,300,1,300], scene_dims = [720,720], ax=None):
+             substrate_dims=[0.0,0.0,-1.0,300,1,300], scene_dims = [720,720], ax=None, **kwargs):
         """ View the generated Gcode.
 
         Parameters
@@ -2430,287 +2482,41 @@ class G(object):
             Useful for adding additional functionailities to plot when debugging.
 
         """
-        import matplotlib.cm as cm
-        from mpl_toolkits.mplot3d import Axes3D
-        import matplotlib.pyplot as plt
-        history = np.array(self.position_history)
+        from mecode_viewer import plot2d, plot3d, animation
+        # import matplotlib.cm as cm
+        # from mpl_toolkits.mplot3d import Axes3D
+        # import matplotlib.pyplot as plt
+        # history = np.array(self.position_history)
 
-        use_local_ax = True if ax is None else False
+        # use_local_ax = True if ax is None else False
 
         if backend == '2d':
-            if ax is None:
-                fig = plt.figure()
-                ax = fig.add_subplot(projection=None)
-
-            extruding_hist = dict(self.extruding_history)
-            #Stepping through all moves after initial position
-            extruding_state = False
-            for index, (pos, color) in enumerate(zip(history[1:],self.color_history[1:]),1):
-                if index in extruding_hist:
-                    extruding_state =  extruding_hist[index][1]
-
-                X, Y = history[index-1:index+1, 0], history[index-1:index+1, 1]
-
-                if extruding_state:
-                    if color_on:
-                        # ax.plot(X, Y, Z,color = cm.gray(self.color_history[index])[:-1])
-                        ax.plot(X, Y, color = self.color_history[index])
-                    else:
-                        ax.plot(X, Y, 'b')
-                else:
-                    if not hide_travel:
-                        ax.plot(X,Y,'k--',linewidth=0.5)
-
-            X, Y = history[:, 0], history[:, 1]
-
-            # Hack to keep 3D plot's aspect ratio square. See SO answer:
-            # http://stackoverflow.com/questions/13685386
-            max_range = np.array([X.max()-X.min(),
-                                  Y.max()-Y.min()]).max() / 2.0
-
-            mean_x = X.mean()
-            mean_y = Y.mean()
-            ax.set_xlim(mean_x - max_range, mean_x + max_range)
-            ax.set_ylim(mean_y - max_range, mean_y + max_range)
-            ax.set_xlabel("X")
-            ax.set_ylabel("Y")
-
-            if outfile == None:
-                if use_local_ax:
-                    plt.show()
-                else:
-                    return ax
-            else:
-                plt.savefig(outfile,dpi=500)
+           ax = plot2d(self.history, ax=ax, **kwargs)
     
 
+
         elif backend == 'matplotlib' or backend == '3d':
-            if ax is None:
-                fig = plt.figure()
-                ax = fig.add_subplot(projection='3d')
-
-            extruding_hist = dict(self.extruding_history)
-            #Stepping through all moves after initial position
-            extruding_state = False
-            for index, (pos, color) in enumerate(zip(history[1:],self.color_history[1:]),1):
-                if index in extruding_hist:
-                    extruding_state =  extruding_hist[index][1]
-
-                X, Y, Z = history[index-1:index+1, 0], history[index-1:index+1, 1], history[index-1:index+1, 2]
-
-                if extruding_state:
-                    if color_on:
-                        # ax.plot(X, Y, Z,color = cm.gray(self.color_history[index])[:-1])
-                        ax.plot(X, Y, Z,color = self.color_history[index])
-                    else:
-                        ax.plot(X, Y, Z,'b')
-                else:
-                    if not hide_travel:
-                        ax.plot(X,Y,Z,'k--',linewidth=0.5)
-
-            X, Y, Z = history[:, 0], history[:, 1], history[:, 2]
-
-            # Hack to keep 3D plot's aspect ratio square. See SO answer:
-            # http://stackoverflow.com/questions/13685386
-            max_range = np.array([X.max()-X.min(),
-                                  Y.max()-Y.min(),
-                                  Z.max()-Z.min()]).max() / 2.0
-
-            mean_x = X.mean()
-            mean_y = Y.mean()
-            mean_z = Z.mean()
-            ax.set_xlim(mean_x - max_range, mean_x + max_range)
-            ax.set_ylim(mean_y - max_range, mean_y + max_range)
-            ax.set_zlim(mean_z - max_range, mean_z + max_range)
-            ax.set_xlabel("X")
-            ax.set_ylabel("Y")
-            ax.set_zlabel("Z")
-
-            if outfile == None:
-                if use_local_ax:
-                    plt.show()
-                else:
-                    return ax
-            else:
-                plt.savefig(outfile,dpi=500)
+            ax = plot3d(self.history, ax=ax, **kwargs)
 
             return ax
 
         elif backend == 'mayavi':
-            from mayavi import mlab
-            mlab.plot3d(history[:, 0], history[:, 1], history[:, 2])
+            # from mayavi import mlab
+            # mlab.plot3d(history[:, 0], history[:, 1], history[:, 2])
+            raise ValueError(f'The {backend} backend is not currently supported.')
 
         elif backend == 'vpython' or backend == 'animated':
-            import vpython as vp
-            import copy
-            
-            #Scene setup
-            vp.scene.width = scene_dims[0]
-            vp.scene.height = scene_dims[1]
-            vp.scene.center = vp.vec(0,0,0) 
-            vp.scene.forward = vp.vec(-1,-1,-1)
-            vp.scene.background = vp.vec(1,1,1)
-
-            position_hist = history
-            speed_hist = dict(self.speed_history)
-            extruding_hist = dict(self.extruding_history)
-            extruding_state = False
-            printheads = np.unique([i[1][0] for i in self.extruding_history][1:])
-            vpython_colors = [vp.color.red,vp.color.blue,vp.color.green,vp.color.cyan,vp.color.yellow,vp.color.magenta,vp.color.orange]
-            filament_color = dict(zip(printheads,vpython_colors[:len(printheads)]))
-
-            #Swap Y & Z axis for new coordinate system
-            position_hist[:,[1,2]] = position_hist[:,[2,1]]
-            #Swap Z direction
-            position_hist[:,2] *= -1
-
-            #Check all values are available for animation
-            if 0 in speed_hist.values():
-                raise ValueError('Cannot specify 0 for feedrate')
-
-            class Printhead(object):
-                def __init__(self, nozzle_diameter, nozzle_length, start_location=vp.vec(0,0,0), start_orientation=vp.vec(0,1,0)):
-                    #Record initialized position as current position
-                    self.current_position = start_location
-                    self.nozzle_length = nozzle_length
-                    self.nozzle_diameter = nozzle_diameter
-
-                    #Create a cylinder to act as the nozzle
-                    self.head = vp.cylinder(pos=start_location,
-                                        axis=nozzle_length*start_orientation, 
-                                        radius=nozzle_diameter/2, 
-                                        texture=vp.textures.metal)
-
-                    #Create trail for filament
-                    self.tail = []
-                    self.previous_head_position = copy.copy(self.head.pos)
-                    self.make_trail = False
-                    
-                    #Create Luer lock fitting
-                    cyl_outline = np.array([[0.2,0],
-                                   [1.2,1.4],
-                                   [1.2,5.15],
-                                   [2.4,8.7],
-                                   [2.6,15.6],
-                                   [2.4,15.6],
-                                   [2.2,8.7],
-                                   [1.0,5.15],
-                                   [1.0,1.4],
-                                   [0,0],
-                                   [0.2,0]])
-                    fins_outline_r = np.array([[1.2,2.9],
-                                   [3.0,3.7],
-                                   [3.25,15.6],
-                                   [2.6,15.6],
-                                   [2.4,8.7],
-                                   [1.2,5.15],
-                                   [1.2,2.9]])
-                    fins_outline_l = np.array([[-1.2,2.9],
-                                   [-3.0,3.7],
-                                   [-3.25,15.6],
-                                   [-2.6,15.6],
-                                   [-2.4,8.7],
-                                   [-1.2,5.15],
-                                   [-1.2,2.9]])
-                    cyl_outline[:,1] += nozzle_length
-                    fins_outline_r[:,1] += nozzle_length
-                    fins_outline_l[:,1] += nozzle_length
-                    cylpath = vp.paths.circle(radius=0.72/2)
-                    left_fin = vp.extrusion(path=[vp.vec(0,0,-0.1),vp.vec(0,0,0.1)],shape=fins_outline_r.tolist(),color=vp.color.blue,opacity=0.7,shininess=0.1)
-                    right_fin =vp.extrusion(path=[vp.vec(0,0,-0.1),vp.vec(0,0,0.1)],shape=fins_outline_l.tolist(),color=vp.color.blue,opacity=0.7,shininess=0.1)
-                    luer_body = vp.extrusion(path=cylpath, shape=cyl_outline.tolist(), color=vp.color.blue,opacity=0.7,shininess=0.1)
-                    luer_fitting = vp.compound([luer_body, right_fin, left_fin])
-
-                    #Create Nordson Barrel
-                    #Barrel_outline exterior
-                    first_part = [[5.25,0]]
-                    barrel_curve = np.array([[ 0.        , 0.        ],
-                                    [ 0.01538957,  0.19554308],
-                                    [ 0.06117935,  0.38627124],
-                                    [ 0.13624184,  0.56748812],
-                                    [ 0.23872876,  0.73473157],
-                                    [ 0.36611652,  0.88388348],
-                                    [ 0.9775778 ,  1.82249027],
-                                    [ 1.46951498,  2.73798544],
-                                    [ 1.82981493,  3.60782647],
-                                    [ 2.04960588,  4.41059499],
-                                    [ 2.12347584,  5.12652416]])
-                    barrel_curve *= 1.5
-                    barrel_curve[:,0] += 5.25
-                    barrel_curve[:,1] += 8.25
-                    last_part = [[9.2,17.0],
-                                 [9.2,80]]
-
-                    barrel_outline = np.append(first_part,barrel_curve,axis=0)
-                    barrel_outline = np.append(barrel_outline,last_part,axis=0)
-                    barrel_outline[:,0] -= 1
-                   
-                   #Create interior surface
-                    barrel_outline_inter = np.copy(np.flip(barrel_outline,axis=0))
-                    barrel_outline_inter[:,0] -= 2.5
-                    barrel_outline = np.append(barrel_outline,barrel_outline_inter,axis=0)
-                    barrel_outline = np.append(barrel_outline,[[4.25,0]],axis=0)
-                    barrel_outline[:,1] += 13 + nozzle_length
-
-                    barrelpath = vp.paths.circle(radius=2.0/2)
-                    barrel = vp.extrusion(path=barrelpath, shape=barrel_outline.tolist(), color=vp.color.gray(0.8),opacity=1.0,shininess=0.1)
-
-                    #Combine into single head
-                    self.body = vp.compound([barrel,luer_fitting],pos=start_location+vp.vec(0,nozzle_length+46.5,0))
-
-                def abs_move(self, endpoint, feed=2.0,print_line=True,tail_color = None):
-                    move_length = (endpoint - self.current_position).mag
-                    time_to_move = move_length/(feed*fast_forward)
-                    total_frames = round(time_to_move*framerate)
-
-                    #Create linspace of points between beginning and end
-                    inter_points = np.array([np.linspace(i,j,total_frames) for i,j in zip([self.current_position.x,self.current_position.y,self.current_position.z],[endpoint.x,endpoint.y,endpoint.z])])
-
-                    for inter_move in np.transpose(inter_points): 
-                        vp.rate(framerate)
-                        self.head.pos.x = self.body.pos.x = inter_move[0]
-                        self.head.pos.z = self.body.pos.z = inter_move[2]
-                        self.head.pos.y = inter_move[1]
-                        self.body.pos.y = inter_move[1]+self.nozzle_length+46.5
-                        
-                        if self.make_trail and print_line :  
-                            if (self.previous_head_position.x != self.head.pos.x) or (self.previous_head_position.y != self.head.pos.y) or (self.previous_head_position.z != self.head.pos.z):  
-                                self.tail[-1].append(pos=vp.vec(self.head.pos.x,self.head.pos.y-self.nozzle_diameter/2,self.head.pos.z))
-                        elif not self.make_trail and print_line:
-                            vp.sphere(pos=vp.vec(self.head.pos.x,self.head.pos.y-self.nozzle_diameter/2,self.head.pos.z),color=tail_color,radius=self.nozzle_diameter/2)
-                            self.tail.append(vp.curve(pos=vp.vec(self.head.pos.x,self.head.pos.y-self.nozzle_diameter/2,self.head.pos.z),color=tail_color,radius=self.nozzle_diameter/2))
-                        self.make_trail = print_line
-
-                        self.previous_head_position = copy.copy(self.head.pos)
-
-                        #Track tip of nozzle with camera if nozzle_cam mode is on
-                        if nozzle_cam:
-                            vp.scene.center = self.head.pos
-        
-                    #Set endpoint as current position
-                    self.current_position = endpoint
-
-            def run():
-                #Stepping through all moves after initial position
-                extruding_state = False
-                for count, (pos, color) in enumerate(zip(position_hist[1:],self.color_history[1:]),1):
-                    X, Y, Z = pos
-                    if count in speed_hist:
-                        t_speed = speed_hist[count]
-                    if count in extruding_hist:
-                        extruding_state =  extruding_hist[count][1]
-                        t_color = filament_color[extruding_hist[count][0]] if extruding_hist[count][0] != None else vp.color.black
-                    self.head.abs_move(vp.vec(*pos),feed=t_speed,print_line=extruding_state,tail_color=t_color)
-
-            self.head = Printhead(nozzle_diameter=nozzle_dims[0],nozzle_length=nozzle_dims[1], start_location=vp.vec(*position_hist[0]))
-            vp.box(pos=vp.vec(substrate_dims[0],substrate_dims[2],substrate_dims[1]),
-                   length=substrate_dims[3],
-                   height=substrate_dims[4],
-                   width=substrate_dims[5],
-                   color=vp.color.gray(0.8),
-                   opacity=0.3)
-            vp.scene.waitfor('click')
-            run()
+            animation(self.history,
+                        outfile,
+                        hide_travel,
+                        color_on,
+                        nozzle_cam,
+                        fast_forward,
+                        framerate,
+                        nozzle_dims,
+                        substrate_dims,
+                        scene_dims,
+                        **kwargs)
 
         else:
             raise Exception("Invalid plotting backend! Choose one of mayavi or matplotlib or matplotlib2d or vpython.")
@@ -2815,8 +2621,13 @@ class G(object):
 
     def _update_current_position(self, mode='auto', x=None, y=None, z=None, color = None,
                                  **kwargs):
+        
+        new_state = copy.deepcopy(self.history[-1])
+        new_state['COORDS'] = (x, y, z)
+
         if mode == 'auto':
             mode = 'relative' if self.is_relative else 'absolute'
+            new_state['REL_MODE'] = self.is_relative
 
         if self.x_axis != 'X' and x is not None:
             kwargs[self.x_axis] = x
@@ -2848,16 +2659,26 @@ class G(object):
         y = self._current_position['y']
         z = self._current_position['z']
 
+        new_state['CURRENT_POSITION'] = {'X': x, 'Y': y, 'Z': z}
+        new_state['COLOR'] = color
+
+        # if self.extruding[0] is not None:
+        #     new_state['PRINTING'][self.extruding[0]] = {'printing': self.extruding[1], 'value': self.extruding[2]}
+        # for k, v in self.extrusion_state.items():
+        #     new_state['PRINTING'][k] = v
+        new_state['PRINTING'] = copy.deepcopy(self.extrusion_state)
+        
         self.position_history.append((x, y, z))
-        # TODO: NOT ACCOUNTING FOR STRING COLORS
-        # if color[0] > 1 and isinstance(color[0], float):
-        #     color[0] = color[0]/255
-        # if color[1] > 1 and isinstance(color[0], float):
-        #     color[1] = color[1]/255
-        # if color[2] > 1 and isinstance(color[0], float):
-        #     color[2] = color[2]/255
+
+        try:
+            color = mcolors.to_rgb(color)
+        except ValueError as e:
+            raise ValueError(f'Invalid color value provided and could not convert to RGB: {e}')
 
         self.color_history.append(color)
+        new_state['COLOR'] = color
+        new_state['PRINT_SPEED'] = self.speed
+        
 
         len_history = len(self.position_history)
         if (len(self.speed_history) == 0
@@ -2866,6 +2687,9 @@ class G(object):
         if (len(self.extruding_history) == 0
             or self.extruding_history[-1][1] != self.extruding):
             self.extruding_history.append((len_history - 1, self.extruding))
+
+        self.history.append(new_state)
+        # print('updating state', self.history[-1]['COLOR'], self.history[-1]['PRINTING'] )
 
     def _update_print_time(self, x,y,z):
         if x is None:
