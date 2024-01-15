@@ -246,14 +246,15 @@ class G(object):
 
         local_package_version = read_version_from_setup()
 
-        if local_package_version:
+        if local_package_version and 'unittest' not in sys.modules.keys():
             self.version = local_package_version
             print(f"\nRunning mecode v{local_package_version}")
 
         # confirm that a version is already installed first
-        if local_package_version is not None and remote_package_version is not None:
-            if version.parse(local_package_version) < version.parse(remote_package_version):
-             print("A new mecode version is available. To upgrade to the latest version run:\n\t>>> pip install git+https://github.com/rtellez700/mecode.git --upgrade")
+        if 'unittest' not in sys.modules.keys():
+            if local_package_version is not None and remote_package_version is not None:
+                if version.parse(local_package_version) < version.parse(remote_package_version):
+                    print("A new mecode version is available. To upgrade to the latest version run:\n\t>>> pip install git+https://github.com/rtellez700/mecode.git --upgrade")
             
     def __enter__(self):
         """
@@ -1982,7 +1983,7 @@ class G(object):
             self.extruding = [com_port, self.extruding[1], value if self.extruding else 0]
         else:
             self.extruding = [com_port, self.extruding[1], value if self.extruding else 0]
-        self.write(f'Call setPress P{com_port} Q{value:.2f}')
+        self.write(f'Call setPress P{com_port} Q{value:.1f}')
 
     def linear_actuator_on(self, speed, dispenser):
         ''' Sets Aerotech (or similar) linear actuator speed and ON.
@@ -2007,7 +2008,13 @@ class G(object):
         else:
             self.write(f'FREERUN {dispenser} {speed:.6f}')
 
+        if dispenser not in self.extrusion_state.keys():
+            self.extrusion_state[dispenser] = {'printing': True, 'value': f'{speed:.6f}'}
+        # if extruding source HAS been specified
+        else:
+            self.extrusion_state[dispenser] = {'printing': True, 'value': f'{speed:.6f}'}
         
+        # legacy code
         self.extruding = [dispenser, True]
 
     def linear_actuator_off(self, dispenser):
@@ -2026,6 +2033,14 @@ class G(object):
             self.write(f'FREERUN PDISP{dispenser:d} STOP')
         else:
             self.write(f'FREERUN {dispenser} STOP')
+
+        if dispenser not in self.extrusion_state.keys():
+            self.extrusion_state[dispenser] = {'printing': False, 'value': 0}
+        # if extruding source HAS been specified
+        else:
+            self.extrusion_state[dispenser] = {'printing': False, 'value': 0}
+
+        # legacy code
 
         self.extruding = [dispenser, False]
 
@@ -2100,20 +2115,45 @@ class G(object):
             self.write('$strtask4="{}"'.format(data))
         self.write('Call omniSetInt P{}'.format(com_port))
 
-    def set_alicat_pressure(self,com_port,value):
+    def set_alicat_pressure(self, com_port, value):
         """ Same as [set_pressure][mecode.main.G.set_pressure] method, but for Alicat controller.
         """
+        extruder_id = f'alicat_com_port{com_port}'
+        if extruder_id not in self.extrusion_state.keys():
+            self.extrusion_state[extruder_id] = {'printing': True, 'value': f'{value:.6f}'}
+        # if extruding source HAS been specified
+        else:
+            self.extrusion_state[extruder_id] = {'printing': True, 'value': f'{value:.6f}'}
+
         self.write('Call setAlicatPress P{} Q{}'.format(com_port, value))
 
     def run_pump(self, com_port):
         '''Run pump with internally stored settings.
             Note: to run a pump, first call `set_rate` then call `run`'''
+        
+        extruder_id = f'HApump_com_port{com_port}'
+        if extruder_id not in self.extrusion_state.keys():
+            self.extrusion_state[extruder_id] = {'printing': True, 'value': 1}
+        # if extruding source HAS been specified
+        else:
+            self.extrusion_state[extruder_id] = {'printing': True, 'value': 1}
+
         self.write(f'Call runPump P{com_port}')
+
         self.extruding = [com_port, True, 1]
     
     def stop_pump(self, com_port):
         '''Stops the pump'''
+
+        extruder_id = f'HApump_com_port{com_port}'
+        if extruder_id not in self.extrusion_state.keys():
+            self.extrusion_state[extruder_id] = {'printing': False, 'value': 0}
+        # if extruding source HAS been specified
+        else:
+            self.extrusion_state[extruder_id] = {'printing': False, 'value': 0}
+
         self.write(f'Call stopPump P{com_port}')
+
         self.extruding = [com_port, False, 0]
 
 
@@ -2519,7 +2559,7 @@ class G(object):
                         **kwargs)
 
         else:
-            raise Exception("Invalid plotting backend! Choose one of mayavi or matplotlib or matplotlib2d or vpython.")
+            raise Exception("Invalid plotting backend! Choose one of matplotlib or matplotlib2d or vpython.")
 
     def write(self, statement_in, resp_needed=False):
         if self.print_lines:
@@ -2619,7 +2659,7 @@ class G(object):
         args = ' '.join(args)
         return args
 
-    def _update_current_position(self, mode='auto', x=None, y=None, z=None, color = None,
+    def _update_current_position(self, mode='auto', x=None, y=None, z=None, color = (0,0,0),
                                  **kwargs):
         
         new_state = copy.deepcopy(self.history[-1])

@@ -1,6 +1,6 @@
 import unittest
 from mock import Mock, patch, MagicMock
-import os
+import os, sys
 from time import sleep
 from threading import Thread
 try:
@@ -11,9 +11,15 @@ except ImportError:
 
 import serial
 
-from mecode.printer import Printer
-
 HERE = os.path.dirname(os.path.abspath(__file__))
+
+try:
+    # from mecode import G, is_str, decode2To3
+    from mecode.printer import Printer
+except:
+    sys.path.append(os.path.abspath(os.path.join(HERE, '..', '..')))
+    from mecode.printer import Printer
+
 
 
 class TestPrinter(unittest.TestCase):

@@ -621,7 +621,7 @@ class TestG(TestGFixture):
 
     def test_set_pressure(self):
         self.g.set_pressure(0, 10)
-        self.expect_cmd('Call setPress P0 Q10')
+        self.expect_cmd('Call setPress P0 Q10.0')
         self.assert_output()
 
     def test_set_valve(self):
@@ -771,7 +771,7 @@ class TestG(TestGFixture):
         g.move(10,10)
         outfile.seek(0)
         lines = outfile.readlines()
-        assert(type(lines[0]) == bytes)
+        assert(isinstance(lines[0],bytes))
         outfile.close()
 
     def test_linear_actuator_on(self):
@@ -785,7 +785,7 @@ class TestG(TestGFixture):
 
     def test_linear_actuator_off(self):
         self.g.linear_actuator_off(2)
-        self.expect_cmd(f'FREERUN PDISP2 STOP')
+        self.expect_cmd('FREERUN PDISP2 STOP')
         self.assert_output()
 
         self.g.linear_actuator_off('PDISP2')

@@ -21,11 +21,14 @@ class TestGMatrix(TestGFixture):
         return GMatrix
 
     def test_matrix_push_pop(self):
+        self.g.feed(10)
         # See if we can rotate our rectangel drawing by 90 degrees.
         self.g.push_matrix()
         self.g.rotate(math.pi/2)
         self.g.rect(10, 5)
+        print('>>>>>> ', self.expected)
         self.expect_cmd("""
+        G1 F10
         G1 X-5.000000 Y0.000000
         G1 X0.000000 Y10.000000
         G1 X5.000000 Y-0.000000
@@ -47,6 +50,7 @@ class TestGMatrix(TestGFixture):
         self.assert_position({'x': 0, 'y': 0, 'z': 0})        
         
     def test_multiple_matrix_operations(self):
+        self.g.feed(10)
         # See if we can rotate our rectangel drawing by 90 degrees, but
         # get to 90 degress by rotating twice.
         self.g.push_matrix()
@@ -54,6 +58,7 @@ class TestGMatrix(TestGFixture):
         self.g.rotate(math.pi/4)
         self.g.rect(10, 5)
         self.expect_cmd("""
+        G1 F10
         G1 X-5.000000 Y0.000000
         G1 X0.000000 Y10.000000
         G1 X5.000000 Y-0.000000
@@ -64,10 +69,12 @@ class TestGMatrix(TestGFixture):
         self.assert_almost_position({'x': 0, 'y': 0, 'z': 0})
 
     def test_matrix_scale(self):
+        self.g.feed(10)
         self.g.push_matrix()
         self.g.scale(2)
         self.g.rect(10, 5)
         self.expect_cmd("""
+        G1 F10
         G1 X0.000000 Y10.000000
         G1 X20.000000 Y0.000000
         G1 X0.000000 Y-10.000000
@@ -77,12 +84,14 @@ class TestGMatrix(TestGFixture):
         self.assert_output()
 
     def test_abs_move_and_rotate(self):
+        self.g.feed(10)
         self.g.abs_move(x=5.0)
         self.assert_almost_position({'x' : 5.0, 'y':0, 'z':0})
         self.g.rotate(math.pi)
         self.assert_almost_position({'x' : -5.0, 'y':0, 'z':0})
 
     def test_abs_zmove_with_flip(self):
+        self.g.feed(10)
         self.g.rotate(math.pi)
         self.g.abs_move(x=1)
         self.assert_almost_position({'x': 1.0, 'y': 0, 'z': 0})
@@ -90,6 +99,7 @@ class TestGMatrix(TestGFixture):
         self.assert_almost_position({'x': 1.0, 'y': 0, 'z': 2})        
 
         self.expect_cmd("""
+        G1 F10
         G90  
         G1 X-1.000000 Y0.000000 Z0.000000
         G91
@@ -100,12 +110,14 @@ class TestGMatrix(TestGFixture):
         self.assert_output()
 
     def test_abs_zmove_with_rotate(self):
+        self.g.feed(10)
         self.g.rotate(math.pi/2.0)
         self.g.abs_move(x=1)
         self.assert_almost_position({'x': 1.0, 'y': 0, 'z': 0})
         self.g.abs_move(z=2)
         self.assert_almost_position({'x': 1.0, 'y': 0, 'z': 2})        
         self.expect_cmd("""
+        G1 F10
         G90  
         G1 X0.000000 Y1.000000 Z0.000000
         G91
@@ -116,6 +128,7 @@ class TestGMatrix(TestGFixture):
         self.assert_output()
 
     def test_scale_and_abs_move(self):
+        self.g.feed(10)
         self.g.abs_move(x=1)
         self.g.scale(2.0)
         self.assert_almost_position({'x': .5, 'y': 0, 'z': 0})
@@ -125,9 +138,11 @@ class TestGMatrix(TestGFixture):
         self.assert_almost_position({'x': .5, 'y': 0, 'z': 3})
 
     def test_arc(self):
+        self.g.feed(10)
         self.g.rotate(math.pi/2)
         self.g.arc(x=10, y=0, linearize=False)
         self.expect_cmd("""
+        G1 F10
         G17
         G2 X0.000000 Y10.000000 R5.000000
         """)
@@ -135,6 +150,7 @@ class TestGMatrix(TestGFixture):
         self.assert_almost_position({'x': 10, 'y': 0, 'z': 0})
 
     def test_current_position(self):
+        self.g.feed(10)
         self.g.push_matrix()
         self.g.move(5, 0)
         self.assert_almost_position({'x':5, 'y':0, 'z':0})
@@ -152,6 +168,7 @@ class TestGMatrix(TestGFixture):
         self.assert_almost_position({'x':0, 'y':0, 'z':-1})
 
     def test_matrix_math(self):
+        self.g.feed(10)
         self.assertAlmostEqual(self.g._matrix_transform_length(2), 2.0)
         self.g.rotate(math.pi/3)
         self.assertAlmostEqual(self.g._matrix_transform_length(2), 2.0)
