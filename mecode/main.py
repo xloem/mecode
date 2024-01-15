@@ -1945,7 +1945,7 @@ class G(object):
         else:
             self.extrusion_state[com_port] = {
                 'printing': not self.extrusion_state[com_port]['printing'],
-                'value':  round(self.extrusion_state[com_port]['value'], 1) if not self.extrusion_state[com_port]['printing'] else 0
+                # 'value':  round(self.extrusion_state[com_port]['value'], 1) if not self.extrusion_state[com_port]['printing'] else 0
             }
 
         # legacy code
@@ -2147,10 +2147,10 @@ class G(object):
 
         extruder_id = f'HApump_com_port{com_port}'
         if extruder_id not in self.extrusion_state.keys():
-            self.extrusion_state[extruder_id] = {'printing': False, 'value': 0}
+            self.extrusion_state[extruder_id] = {'printing': False}#, 'value': 0}
         # if extruding source HAS been specified
         else:
-            self.extrusion_state[extruder_id] = {'printing': False, 'value': 0}
+            self.extrusion_state[extruder_id] = {'printing': False}#, 'value': 0}
 
         self.write(f'Call stopPump P{com_port}')
 
