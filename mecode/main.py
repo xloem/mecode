@@ -163,7 +163,7 @@ class G(object):
         self._current_position = defaultdict(float)
         self.is_relative = True
         self.position_history = [(0, 0, 0)]
-        self.color_history = [(0, 0, 0)]
+        self.color_history = [(30/255, 144/255, 255/255)]
         self.speed = 0
         self.speed_history = []
         self.extruding = [None, False, 0] # source, if_printing, printing_value
@@ -406,7 +406,7 @@ class G(object):
         self.write(f'MOVEINC {axis} {disp:.6f} {speed:.6f}')
         # self.extrude = False
 
-    def move(self, x=None, y=None, z=None, rapid=False, color=(0,0,0,0.5), **kwargs):
+    def move(self, x=None, y=None, z=None, rapid=False, color=(30/255, 144/255, 255/255), **kwargs):
         """ Move the tool head to the given position. This method operates in
         relative mode unless a manual call to [absolute][mecode.main.G.absolute] was given previously.
         If an absolute movement is desired, the [abs_move][mecode.main.G.abs_move] method is
