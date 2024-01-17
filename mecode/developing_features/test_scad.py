@@ -1,11 +1,17 @@
-#import sys
-#sys.path.append("..")
+import sys
 import math
 import numpy as np
 import numpy.linalg as la
 import os
-from mecode import GMatrix
-#from matrix import GMatrix
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+
+try:
+    from mecode import GMatrix
+except:
+    sys.path.append(os.path.abspath(os.path.join(HERE, '..', '..')))
+    from mecode import GMatrix
+
 
 g = GMatrix()
 

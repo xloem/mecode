@@ -2196,13 +2196,11 @@ class G(object):
         """
         import solid as sld
         from solid import utils as sldutils
+        import matplotlib.pyplot as plt
 
         # Matplotlib setup for preview
-        import matplotlib.cm as cm
-        from mpl_toolkits.mplot3d import Axes3D
-        import matplotlib.pyplot as plt
-        fig = plt.figure()
-        ax = fig.gca(projection='3d')
+        fig = plt.figure(dpi=150)
+        ax = plt.axes(projection='3d')
 
         def circle(radius,num_points=10):
             circle_pts = []
