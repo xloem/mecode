@@ -218,5 +218,5 @@ while j <= sections:
 
 #g.view('matplotlib')
 #g.view('vpython',substrate_dims=[0.0,0.0,-28.5,300,1,300],nozzle_dims=[1.0,5.0],nozzle_cam=True)
-g.gen_geometry('test')
+g.gen_geometry('test_v2')
 g.teardown()
