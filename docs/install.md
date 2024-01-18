@@ -67,9 +67,14 @@ To download git visit [git-scm.com/downloads](https://git-scm.com/downloads).
 
 ## Installing mecode
 === "GitHub"
-    ```
+    ```bash
         pip install git+https://github.com/rtellez700/mecode.git
     ```
+    If you currently have an old version of mecode, use the following instead:
+    ```bash
+        pip install git+https://github.com/rtellez700/mecode.git --upgrade --force-reinstall
+    ```
+    When a new version is available you can re-run the previous command.
 === "PyPi"
     In-progress
 === "Conda-Forge"
