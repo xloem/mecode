@@ -74,8 +74,8 @@ TODO
 
 - [x] add formal documentation
 - [x] create github page
-- [ ] build out multi-nozzle support
-    - [ ] include multi-nozzle support in view method
+- [x] build out multi-nozzle support
+    - [x] include multi-nozzle support in view method
 - [ ] add ability to read current status of aerotech
   - [ ] turn off omnicure after aborted runs
 - [ ] add support for identifying part bounds and specifying safe post print "parking"
