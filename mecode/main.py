@@ -33,6 +33,7 @@ except NameError:
     def decode2To3(s):
         return s.decode('UTF-8')
 
+DEFAULT_FILAMENT_COLOR = (30/255, 144/255, 255/255)
 
 class G(object):
 
@@ -163,7 +164,7 @@ class G(object):
         self._current_position = defaultdict(float)
         self.is_relative = True
         self.position_history = [(0, 0, 0)]
-        self.color_history = [(30/255, 144/255, 255/255)]
+        self.color_history = [DEFAULT_FILAMENT_COLOR]
         self.speed = 0
         self.speed_history = []
         self.extruding = [None, False, 0] # source, if_printing, printing_value
@@ -406,7 +407,7 @@ class G(object):
         self.write(f'MOVEINC {axis} {disp:.6f} {speed:.6f}')
         # self.extrude = False
 
-    def move(self, x=None, y=None, z=None, rapid=False, color=(30/255, 144/255, 255/255), **kwargs):
+    def move(self, x=None, y=None, z=None, rapid=False, color=DEFAULT_FILAMENT_COLOR, **kwargs):
         """ Move the tool head to the given position. This method operates in
         relative mode unless a manual call to [absolute][mecode.main.G.absolute] was given previously.
         If an absolute movement is desired, the [abs_move][mecode.main.G.abs_move] method is
@@ -1943,10 +1944,7 @@ class G(object):
             self.extrusion_state[com_port] = {'printing': True, 'value': 1}
         # if extruding source HAS been specified
         else:
-            self.extrusion_state[com_port] = {
-                'printing': not self.extrusion_state[com_port]['printing'],
-                # 'value':  round(self.extrusion_state[com_port]['value'], 1) if not self.extrusion_state[com_port]['printing'] else 0
-            }
+            self.extrusion_state[com_port]['printing'] = not self.extrusion_state[com_port]['printing']
 
         # legacy code
         if self.extruding[0] == com_port:
@@ -2170,97 +2168,6 @@ class G(object):
                 letter >>= 1
         return data +'{:02X}'.format(CRC8)
 
-    def gen_geometry(self,outfile,filament_diameter=0.8,cut_point=None,preview=False,color_incl=None):
-        """ Creates an openscad file to create a CAD model from the print path.
-        
-        Parameters
-        ----------
-        outfile : str
-            Location to save the generated .scad file
-        filament_diameter : float (default: 0.8)
-            The com port to communicate over RS-232.
-        cut_point : int (default: None)
-            Stop generating cad model part way through the path
-        preview : bool (default: False)
-            Show matplotlib preview of the part to be generated.
-            Note that cut_point will affect the preview.
-        color_incl : str (default: None)
-            Used to export a single color when it is included in the code
-            design. Useful for exporting mutlimaterial parts as different
-            cad models.
-        Examples
-        --------
-        >>> #Write geometry to 'test.scad'
-        >>> g.gen_geometry('test.scad')
-
-        """
-        import solid as sld
-        from solid import utils as sldutils
-        import matplotlib.pyplot as plt
-
-        # Matplotlib setup for preview
-        fig = plt.figure(dpi=150)
-        ax = plt.axes(projection='3d')
-
-        def circle(radius,num_points=10):
-            circle_pts = []
-            for i in range(2 * num_points):
-                angle = math.radians(360 / (2 * num_points) * i)
-                circle_pts.append(sldutils.Point3(radius * math.cos(angle), radius * math.sin(angle), 0))
-            return circle_pts
-        
-        # SolidPython setup for geometry creation
-        extruded = 0
-        filament_cross = circle(radius=filament_diameter/2)
-
-        extruding_hist = dict(self.extruding_history)
-        position_hist = np.array(self.position_history)
-
-        #Stepping through all moves after initial position
-        extruding_state = False
-        for index, (pos, color) in enumerate(zip(self.position_history[1:cut_point],self.color_history[1:cut_point]),1):
-            sys.stdout.write('\r')
-            sys.stdout.write("Exporting model: {:.0f}%".format(index/len(self.position_history[1:])*100))
-            sys.stdout.flush()
-            #print("{}/{}".format(index,len(self.position_history[1:])))
-            if index in extruding_hist:
-                extruding_state =  extruding_hist[index][1]
-
-            if extruding_state and ((color == color_incl) or (color_incl is None)):
-                X, Y, Z = position_hist[index-1:index+1, 0], position_hist[index-1:index+1, 1], position_hist[index-1:index+1, 2]
-                # Plot to matplotlb
-                if color_incl is not None:
-                    ax.plot(X, Y, Z,color_incl)
-                else:
-                    ax.plot(X, Y, Z,'b')
-                # Add geometry to part
-                extruded += sldutils.extrude_along_path(shape_pts=filament_cross, path_pts=[sldutils.Point3(*position_hist[index-1]),sldutils.Point3(*position_hist[index])])
-                extruded += sld.translate(position_hist[index-1])(sld.sphere(r=filament_diameter/2,segments=20))
-                extruded += sld.translate(position_hist[index])(sld.sphere(r=filament_diameter/2,segments=20))
-                
-        # Export geometry to file
-        file_out = os.path.join(os.curdir, '{}.scad'.format(outfile))
-        print("\nSCAD file written to: \n%(file_out)s" % vars())
-        sld.scad_render_to_file(extruded, file_out, include_orig_code=False)
-
-        if preview:
-            # Display Geometry for matplotlib
-            X, Y, Z = position_hist[:, 0], position_hist[:, 1], position_hist[:, 2]
-
-            # Hack to keep 3D plot's aspect ratio square. See SO answer:
-            # http://stackoverflow.com/questions/13685386
-            max_range = np.array([X.max()-X.min(),
-                                  Y.max()-Y.min(),
-                                  Z.max()-Z.min()]).max() / 2.0
-
-            mean_x = X.mean()
-            mean_y = Y.mean()
-            mean_z = Z.mean()
-            ax.set_xlim(mean_x - max_range, mean_x + max_range)
-            ax.set_ylim(mean_y - max_range, mean_y + max_range)
-            ax.set_zlim(mean_z - max_range, mean_z + max_range)
-            scaling = np.array([getattr(ax, 'get_{}lim'.format(dim))() for dim in 'xyz']); ax.auto_scale_xyz(*[[np.min(scaling), np.max(scaling)]]*3)
-            plt.show()
 
     def calc_print_time(self):
         print(f'\nApproximate print time: \n\t{self.print_time:.3f} seconds \n\t{self.print_time/60:.1f} min \n\t{self.print_time/60/60:.1f} hrs\n')
@@ -2450,6 +2357,141 @@ class G(object):
             self.absolute()
 
         return length
+
+    # EXPORT Functions  #######################################################
+    def export_points(self, filename):
+        ''' Exports a CSV file of the x, y, z coordinates with optional color column for multimaterial support
+
+            Parameters
+            ----------
+            filename : str
+                The name of the exported CSV file.
+            
+        '''
+        _, file_extension = os.path.splitext(filename)
+        if file_extension is False:
+            file_extension = f'{file_extension}.csv'
+
+        extruding_history = []
+        color_history = []
+        printing_history = []
+
+        for h in self.history:
+            any_on = any(entry['printing'] is True for entry in h['PRINTING'].values())
+            
+            extruding_history.append([h['CURRENT_POSITION']['X'],
+                                      h['CURRENT_POSITION']['Y'],
+                                      h['CURRENT_POSITION']['Z']])
+            color_history.append(h['COLOR'] if h['COLOR'] is not None else DEFAULT_FILAMENT_COLOR)
+            printing_history.append(1 if any_on else 0)
+
+        
+        extruding_history = np.array(extruding_history).reshape(-1,3)
+        color_history = np.array(color_history).reshape(-1, 3)
+        printing_history = np.array(printing_history).reshape(-1,1)
+
+        np.savetxt(filename,
+                    np.hstack([extruding_history, color_history, printing_history]),
+                   delimiter=',',
+                   header='x,y,z,R,G,B,ON',
+                   comments='',
+                   fmt=['%.6f']*3+['%.3f']*3 + ['%d']
+                   )
+
+
+
+
+    def gen_geometry(self,outfile,filament_diameter=0.8,cut_point=None,preview=False,color_incl=None):
+        """ Creates an openscad file to create a CAD model from the print path.
+        
+        Parameters
+        ----------
+        outfile : str
+            Location to save the generated .scad file
+        filament_diameter : float (default: 0.8)
+            The com port to communicate over RS-232.
+        cut_point : int (default: None)
+            Stop generating cad model part way through the path
+        preview : bool (default: False)
+            Show matplotlib preview of the part to be generated.
+            Note that cut_point will affect the preview.
+        color_incl : str (default: None)
+            Used to export a single color when it is included in the code
+            design. Useful for exporting mutlimaterial parts as different
+            cad models.
+        Examples
+        --------
+        >>> #Write geometry to 'test.scad'
+        >>> g.gen_geometry('test.scad')
+
+        """
+        import solid as sld
+        from solid import utils as sldutils
+        import matplotlib.pyplot as plt
+
+        # Matplotlib setup for preview
+        fig = plt.figure(dpi=150)
+        ax = plt.axes(projection='3d')
+
+        def circle(radius,num_points=10):
+            circle_pts = []
+            for i in range(2 * num_points):
+                angle = math.radians(360 / (2 * num_points) * i)
+                circle_pts.append(sldutils.Point3(radius * math.cos(angle), radius * math.sin(angle), 0))
+            return circle_pts
+        
+        # SolidPython setup for geometry creation
+        extruded = 0
+        filament_cross = circle(radius=filament_diameter/2)
+
+        extruding_hist = dict(self.extruding_history)
+        position_hist = np.array(self.position_history)
+
+        #Stepping through all moves after initial position
+        extruding_state = False
+        for index, (pos, color) in enumerate(zip(self.position_history[1:cut_point],self.color_history[1:cut_point]),1):
+            sys.stdout.write('\r')
+            sys.stdout.write("Exporting model: {:.0f}%".format(index/len(self.position_history[1:])*100))
+            sys.stdout.flush()
+            #print("{}/{}".format(index,len(self.position_history[1:])))
+            if index in extruding_hist:
+                extruding_state =  extruding_hist[index][1]
+
+            if extruding_state and ((color == color_incl) or (color_incl is None)):
+                X, Y, Z = position_hist[index-1:index+1, 0], position_hist[index-1:index+1, 1], position_hist[index-1:index+1, 2]
+                # Plot to matplotlb
+                if color_incl is not None:
+                    ax.plot(X, Y, Z,color_incl)
+                else:
+                    ax.plot(X, Y, Z,'b')
+                # Add geometry to part
+                extruded += sldutils.extrude_along_path(shape_pts=filament_cross, path_pts=[sldutils.Point3(*position_hist[index-1]),sldutils.Point3(*position_hist[index])])
+                extruded += sld.translate(position_hist[index-1])(sld.sphere(r=filament_diameter/2,segments=20))
+                extruded += sld.translate(position_hist[index])(sld.sphere(r=filament_diameter/2,segments=20))
+                
+        # Export geometry to file
+        file_out = os.path.join(os.curdir, '{}.scad'.format(outfile))
+        print("\nSCAD file written to: \n%(file_out)s" % vars())
+        sld.scad_render_to_file(extruded, file_out, include_orig_code=False)
+
+        if preview:
+            # Display Geometry for matplotlib
+            X, Y, Z = position_hist[:, 0], position_hist[:, 1], position_hist[:, 2]
+
+            # Hack to keep 3D plot's aspect ratio square. See SO answer:
+            # http://stackoverflow.com/questions/13685386
+            max_range = np.array([X.max()-X.min(),
+                                  Y.max()-Y.min(),
+                                  Z.max()-Z.min()]).max() / 2.0
+
+            mean_x = X.mean()
+            mean_y = Y.mean()
+            mean_z = Z.mean()
+            ax.set_xlim(mean_x - max_range, mean_x + max_range)
+            ax.set_ylim(mean_y - max_range, mean_y + max_range)
+            ax.set_zlim(mean_z - max_range, mean_z + max_range)
+            scaling = np.array([getattr(ax, 'get_{}lim'.format(dim))() for dim in 'xyz']); ax.auto_scale_xyz(*[[np.min(scaling), np.max(scaling)]]*3)
+            plt.show()
 
     def export_APE(self):
         """ Exports a list of dictionaries describing extrusion moves in a
