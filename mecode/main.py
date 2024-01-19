@@ -2170,7 +2170,11 @@ class G(object):
 
 
     def calc_print_time(self):
-        print(f'\nApproximate print time: \n\t{self.print_time:.3f} seconds \n\t{self.print_time/60:.1f} min \n\t{self.print_time/60/60:.1f} hrs\n')
+        print(f'''\n; Approximate print time:
+; \t{self.print_time:.3f} seconds
+; \t{self.print_time/60:.1f} min
+; \t{self.print_time/60/60:.1f} hrs
+''')
         
     # ROS3DA Functions  #######################################################
 

@@ -1,6 +1,6 @@
-By passing an `axes` handle to [`view()`](/mecode/api-reference/mecode/#mecode.main.G.view) you can take advantage of all plotting features from [matplotlib](https://matplotlib.org).
+## Example: using matplotlib axes to extend plotting capabilities
 
-## Example
+By passing an `axes` handle to [`view()`](/mecode/api-reference/mecode/#mecode.main.G.view) you can take advantage of all plotting features from [matplotlib](https://matplotlib.org).
 
 ```python
 from mecode import G
@@ -54,3 +54,79 @@ plt.show()
 
 ### Result: example using matplotlib patches.Rectangle 
 ![](/mecode/assets/images/visualization_example.png)
+
+## Example: printing droplets
+```python
+    from mecode import G
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import Rectangle
+
+    g = G()
+    g.feed(10)
+
+    for j in range(10):
+        g.toggle_pressure(5) # ON
+        g.move(x=+j/10, color=(1,0,0))
+        g.toggle_pressure(5) # OFF
+        g.move(x=2)
+
+    g.teardown()
+
+    g.view('3d', shape='droplet', radius=0.5)
+
+```
+
+??? example "Generated Gcode"
+
+    ```
+    G91
+    G1 F10
+    Call togglePress P5
+    G1 X0.000000
+    Call togglePress P5
+    G1 X2.000000
+    Call togglePress P5
+    G1 X0.100000
+    Call togglePress P5
+    G1 X2.000000
+    Call togglePress P5
+    G1 X0.200000
+    Call togglePress P5
+    G1 X2.000000
+    Call togglePress P5
+    G1 X0.300000
+    Call togglePress P5
+    G1 X2.000000
+    Call togglePress P5
+    G1 X0.400000
+    Call togglePress P5
+    G1 X2.000000
+    Call togglePress P5
+    G1 X0.500000
+    Call togglePress P5
+    G1 X2.000000
+    Call togglePress P5
+    G1 X0.600000
+    Call togglePress P5
+    G1 X2.000000
+    Call togglePress P5
+    G1 X0.700000
+    Call togglePress P5
+    G1 X2.000000
+    Call togglePress P5
+    G1 X0.800000
+    Call togglePress P5
+    G1 X2.000000
+    Call togglePress P5
+    G1 X0.900000
+    Call togglePress P5
+    G1 X2.000000
+
+    ; Approximate print time:
+    ;       2.450 seconds
+    ;       0.0 min
+    ;       0.0 hrs
+    ```
+### Result
+![](/mecode/assets/images/droplet_example.jpg)
