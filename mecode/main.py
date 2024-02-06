@@ -2521,9 +2521,19 @@ class G(object):
 
     # Public Interface  #######################################################
 
-    def view(self, backend='matplotlib', outfile=None, hide_travel=False,color_on=True, nozzle_cam=False,
-             fast_forward = 3, framerate = 60, nozzle_dims=[1.0,20.0], 
-             substrate_dims=[0.0,0.0,-1.0,300,1,300], scene_dims = [720,720], ax=None, **kwargs):
+    def view(self,
+                backend='matplotlib',
+                outfile=None,
+                hide_travel=False,
+                color_on=True,
+                nozzle_cam=False,
+                fast_forward = 3,
+                framerate = 60,
+                nozzle_dims=[1.0,20.0],
+                substrate_dims=[0.0,0.0,-1.0,300,1,300],
+                scene_dims = [720,720],
+                ax=None,
+                **kwargs):
         """ View the generated Gcode.
 
         Parameters
@@ -2575,12 +2585,12 @@ class G(object):
         # use_local_ax = True if ax is None else False
 
         if backend == '2d':
-           ax = plot2d(self.history, ax=ax, **kwargs)
+           ax = plot2d(self.history, ax=ax, hide_travel=hide_travel, **kwargs)
     
 
 
         elif backend == 'matplotlib' or backend == '3d':
-            ax = plot3d(self.history, ax=ax, **kwargs)
+            ax = plot3d(self.history, ax=ax, hide_travel=hide_travel, **kwargs)
 
             return ax
 
