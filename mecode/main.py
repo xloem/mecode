@@ -2381,7 +2381,7 @@ class G(object):
         printing_history = []
 
         for h in self.history:
-            any_on = any(entry['printing'] is True for entry in h['PRINTING'].values())
+            any_on = any([entry['printing'] is True and entry['value'] != 0 for entry in h['PRINTING'].values()])
             
             extruding_history.append([h['CURRENT_POSITION']['X'],
                                       h['CURRENT_POSITION']['Y'],
