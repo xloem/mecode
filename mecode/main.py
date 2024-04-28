@@ -407,7 +407,7 @@ class G(object):
         self.write(f'MOVEINC {axis} {disp:.6f} {speed:.6f}')
         # self.extrude = False
 
-    def move(self, x=None, y=None, z=None, rapid=False, color=DEFAULT_FILAMENT_COLOR, **kwargs):
+    def move(self, x=None, y=None, z=None, rapid=False, color=DEFAULT_FILAMENT_COLOR, comment='', **kwargs):
         """ Move the tool head to the given position. This method operates in
         relative mode unless a manual call to [absolute][mecode.main.G.absolute] was given previously.
         If an absolute movement is desired, the [abs_move][mecode.main.G.abs_move] method is
@@ -419,6 +419,8 @@ class G(object):
             Executes an uncoordinated move to the specified location.
         color : hex string or rgb(a) string
             Specifies a color to be added to color history for viewing.
+        comment : str (default: '')
+            Adds a comment to the end of the line.
 
         Examples
         --------
@@ -470,7 +472,7 @@ class G(object):
         # self.history.append(new_state)
         args = self._format_args(x, y, z, **kwargs)
         cmd = 'G0 ' if rapid else 'G1 '
-        self.write(cmd + args)
+        self.write(cmd + args + f'; {comment}')
 
     def abs_move(self, x=None, y=None, z=None, rapid=False, **kwargs):
         """ Same as [move][mecode.main.G.move] method, but positions are interpreted as absolute.
