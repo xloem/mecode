@@ -276,7 +276,7 @@ class G(object):
 
     # GCode Aliases  ########################################################
 
-    def set_home(self, x=None, y=None, z=None, **kwargs):
+    def set_home(self, x=0, y=0, z=0, **kwargs):
         """ Set the current position to the given position without moving.
 
         Examples
@@ -289,7 +289,11 @@ class G(object):
         args = self._format_args(x, y, z, **kwargs)
         self.write('G92 ' + args)
 
-        self._update_current_position(mode='absolute', x=x, y=y, z=z, **kwargs)
+        new_origin = (self.history[-1]['CURRENT_POSITION']['X'] + x,
+                      self.history[-1]['CURRENT_POSITION']['Y'] + y,
+                      self.history[-1]['CURRENT_POSITION']['Z'] + z)
+
+        self.history[-1]['ORIGIN'] = new_origin
 
     def reset_home(self):
         """ Reset the position back to machine coordinates without moving.
