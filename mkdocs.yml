@@ -2,7 +2,7 @@ site_name: mecode
 site_description: Modern, Python gcode toolpath generation.
 site_author: Rodrigo Telles
 site_url: https://rtellez700.github.io/mecode/
-repo_name: pypa/mecode
+repo_name: rtellez700/mecode
 repo_url: https://github.com/rtellez700/mecode/
 edit_uri: ""
 copyright: 'Copyright &copy; 2014-present'
