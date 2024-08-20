@@ -27,7 +27,7 @@ yourself manually writing your own GCode, then mecode is for you.
     Install [`mecode`](#) with [`pip`](#) and get up
     and running in minutes
 
-    [:octicons-arrow-right-24: Installation](/mecode/install)
+    [:octicons-arrow-right-24: Installation](install.md)
 
 -   :material-format-rotate-90:{ .lg .middle } __Matrix Transformation__
 
