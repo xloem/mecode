@@ -52,7 +52,7 @@ class GMatrix(G):
     # Matrix manipulation #####################################################        
     def _matrix_setup(self):
         " Create our matrix stack. "
-        self.matrix_stack = [np.matrix([[1.0, 0], [0.0, 1.0]])]
+        self.matrix_stack = [np.array([[1.0, 0], [0.0, 1.0]])]
 
     def push_matrix(self):
         " Push a copy of our current transformation matrix. "
@@ -65,7 +65,7 @@ class GMatrix(G):
     def rotate(self, angle):
         """Rotate the current transformation matrix around the Z
         axis, in radians. """
-        rotation_matrix = np.matrix([[math.cos(angle), -math.sin(angle)],
+        rotation_matrix = np.array([[math.cos(angle), -math.sin(angle)],
                                      [math.sin(angle), math.cos(angle)]])
 
         self.matrix_stack[-1] = rotation_matrix * self.matrix_stack[-1]
@@ -82,7 +82,7 @@ class GMatrix(G):
         if x is None: x = 0
         if y is None: y = 0
 
-        transform = matrix * np.matrix([x, y]).T
+        transform = matrix * np.array([x, y]).T
         
         return (transform.item(0), transform.item(1), z)
 
@@ -121,7 +121,7 @@ class GMatrix(G):
         if y is None: y = 0.0
 
         matrix = self.matrix_stack[-1]
-        transform = matrix.getI() * np.matrix([x, y]).T
+        transform = matrix.getI() * np.array([x, y]).T
         
         return { 'x':transform.item(0),
                  'y':transform.item(1),
