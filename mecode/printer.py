@@ -369,7 +369,7 @@ class Printer(object):
                     self._ok_received.wait(1)
                 line = self._next_line()
                 with self._communication_lock:
-                    self.s.write(line.encode())
+                    self.s.write(line.encode('utf-8'))
                     self._ok_received.clear()
                     self._current_line_idx += 1
                 # Grab the just sent line without line numbers or checksum
