@@ -117,13 +117,20 @@ class GMatrix(G):
         x = self._current_position['x']
         y = self._current_position['y']
         z = self._current_position['z']
+
+        # Ensure x and y are not None; default to 0.0
         if x is None: x = 0.0
         if y is None: y = 0.0
 
+        # Get the latest matrix from the stack
         matrix = self.matrix_stack[-1]
-        transform = matrix.getI() * np.array([x, y]).T
-        
-        return { 'x':transform.item(0),
-                 'y':transform.item(1),
-                 'z':z }
+
+        # Calculate the inverse of the matrix using numpy.linalg.inv
+        inverse_matrix = np.linalg.inv(matrix)
+
+        # Perform matrix multiplication using @ operator
+        transform = inverse_matrix @ np.array([x, y]).T
+
+        # Return the transformed coordinates
+        return {'x': transform[0], 'y': transform[1], 'z': z}
 
