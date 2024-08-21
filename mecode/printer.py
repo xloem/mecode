@@ -312,7 +312,7 @@ class Printer(object):
         self.printing = True
         self.stop_printing = False
         self._print_thread = Thread(target=self._print_worker_entrypoint, name='Print')
-        self._print_thread.setDaemon(True)
+        self._print_thread.daemon = True
         self._print_thread.start()
         logger.debug('print_thread started')
 
@@ -327,7 +327,7 @@ class Printer(object):
             return
         self.stop_reading = False
         self._read_thread = Thread(target=self._read_worker_entrypoint, name='Read')
-        self._read_thread.setDaemon(True)
+        self._read_thread.daemon = True
         self._read_thread.start()
         logger.debug('read_thread started')
 
