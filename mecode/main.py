@@ -276,7 +276,7 @@ class G(object):
 
     # GCode Aliases  ########################################################
 
-    def set_home(self, x=0, y=0, z=0, **kwargs):
+    def set_home(self, x=None, y=None, z=None, **kwargs):
         """ Set the current position to the given position without moving.
 
         Examples
@@ -289,11 +289,20 @@ class G(object):
         args = self._format_args(x, y, z, **kwargs)
         self.write('G92 ' + args)
 
+        self._update_current_position(x=x, y=y, z=z, mode='absolute', **kwargs)
+
+
+        # Handle None values and default to zero if None
+        x = 0 if x is None else x
+        y = 0 if y is None else y
+        z = 0 if z is None else z
+
         new_origin = (self.history[-1]['CURRENT_POSITION']['X'] + x,
                       self.history[-1]['CURRENT_POSITION']['Y'] + y,
                       self.history[-1]['CURRENT_POSITION']['Z'] + z)
 
         self.history[-1]['ORIGIN'] = new_origin
+
 
     def reset_home(self):
         """ Reset the position back to machine coordinates without moving.
@@ -2774,16 +2783,26 @@ class G(object):
 
     def _format_args(self, x=None, y=None, z=None, **kwargs):
         d = self.output_digits
+        epsilon = np.finfo(float).eps  # Machine epsilon for float
         args = []
+
+        def format_value(axis, value):
+            # Replace values effectively close to zero with 0.0 to avoid negative zero
+            return '{0}{1:.{digits}f}'.format(axis, 0 if abs(value) < epsilon else value, digits=d)
+
         if x is not None:
-            args.append('{0}{1:.{digits}f}'.format(self.x_axis, x, digits=d))
+            args.append(format_value(self.x_axis, x))
         if y is not None:
-            args.append('{0}{1:.{digits}f}'.format(self.y_axis, y, digits=d))
+            args.append(format_value(self.y_axis, y))
         if z is not None:
-            args.append('{0}{1:.{digits}f}'.format(self.z_axis, z, digits=d))
-        args += ['{0}{1:.{digits}f}'.format(k, kwargs[k], digits=d) for k in sorted(kwargs)]
+            args.append(format_value(self.z_axis, z))
+
+        # Format additional arguments
+        args += [format_value(k, kwargs[k]) for k in sorted(kwargs)]
+
         args = ' '.join(args)
         return args
+
 
     def _update_current_position(self, mode='auto', x=None, y=None, z=None, color = (0,0,0),
                                  **kwargs):

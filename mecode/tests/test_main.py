@@ -67,15 +67,18 @@ class TestG(TestGFixture):
 
     def test_set_home(self):
         g = self.g
-        g.set_home()
+
+        g.set_home(x=0, y=0, z=0)
         self.expect_cmd('G92 X0.000000 Y0.000000 Z0.000000')
         self.assert_output()
+
         g.set_home(x=10, y=20, A=5)
-        self.expect_cmd('G92 X10.000000 Y20.000000 Z0.000000 A5.000000')
+        self.expect_cmd('G92 X10.000000 Y20.000000 A5.000000')
         self.assert_output()
-        self.assert_position({'A': 5.0, 'x': 10.0, 'y': 20.0, 'z': 0})
+        self.assert_position({'x': 10.0, 'y': 20.0, 'z': 0, 'A': 5.0})
+        
         g.set_home(y=0)
-        self.assert_position({'A': 5.0, 'x': 10.0, 'y': 0.0, 'z': 0})
+        self.assert_position({'x': 10.0, 'y': 0.0 , 'z': 0.0, 'A': 5.0})
 
     def test_reset_home(self):
         self.g.reset_home()

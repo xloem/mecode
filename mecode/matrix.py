@@ -129,7 +129,8 @@ class GMatrix(G):
         inverse_matrix = np.linalg.inv(matrix)
 
         # Perform matrix multiplication using @ operator
-        transform = inverse_matrix @ np.array([x, y]).T
+        transform = inverse_matrix @ np.array([x, y]) #.T
+        # transform = inverse_matrix * np.array([x, y])
 
         # Return the transformed coordinates
         return {'x': transform[0], 'y': transform[1], 'z': z}
