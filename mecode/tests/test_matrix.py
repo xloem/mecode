@@ -13,7 +13,7 @@ except:
     sys.path.append(abspath(join(HERE, '..', '..')))
     from mecode import GMatrix
 
-from .test_main import TestGFixture
+from test_main import TestGFixture
 
 class TestGMatrix(TestGFixture):
 
