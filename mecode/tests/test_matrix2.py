@@ -33,8 +33,8 @@ class TestGMatrix(TestGFixture):
 
         self.expect_cmd("""
         G1 F1
-        G1 X10.000000 Y10.000000 Z0.000000;
-        G1 X10.000000 Y10.000000 Z0.000000 A50.000000;
+        G1 X10.000000 Y10.000000;
+        G1 X10.000000 Y10.000000 A50.000000;
         G1 X10.000000 Y10.000000 Z10.000000;
         """)
         self.assert_output()

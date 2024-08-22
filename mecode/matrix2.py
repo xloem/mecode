@@ -95,17 +95,21 @@ class GMatrix(G):
         super(GMatrix, self).abs_move(x,y,z, **kwargs)
 
     def move(self, x=None, y=None, z=None, **kwargs):
-        # (x,y,z) = self._matrix_transform(x,y,z)
+        x_p, y_p, z_p = self._transform_point(x, y, z)
+
+        # NOTE: untransformed z is being used here. If support for 3D transformations is added, this should be updated
+        super(GMatrix, self).move(x_p, y_p, z, **kwargs)
+    
+    def _transform_point(self, x, y, z):
         current_matrix = self.get_current_matrix()
 
         if x is None: x = 0
         if y is None: y = 0
         if z is None: z = 0
 
-        x, y, z = current_matrix @ np.array([x, y, z])
+        return current_matrix @ np.array([x, y, z])
 
-        super(GMatrix, self).move(x, y, z, **kwargs)
-    
+
     # @property
     # def current_position(self):
     #     # x = self._current_position['x']
