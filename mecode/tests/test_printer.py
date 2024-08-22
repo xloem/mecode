@@ -47,9 +47,11 @@ class TestPrinter(unittest.TestCase):
     def test_disconnect(self):
         #disconnect should work without having called start or connect
         self.p.disconnect()
+        self.assertTrue(not self.p._disconnect_pending)
 
         self.p.start()
         self.assertTrue(self.p._read_thread.is_alive())
+
         self.p.disconnect()
         self.assertFalse(self.p._read_thread.is_alive())
         self.assertFalse(self.p._print_thread.is_alive())
@@ -68,17 +70,23 @@ class TestPrinter(unittest.TestCase):
 
     def test_sendline(self):
         self.p.start()
-        testline = 'no new line'
-        self.p.sendline(testline)
+
         while len(self.p.sentlines) == 0:
             sleep(0.01)
-        self.p.s.write.assert_called_with('N1 no new line*44\n')
+        self.p.s.write.assert_called_with(b'N0 M110 N0*125\n')
 
-        testline = 'with new line\n'
+        testline = 'no new line'
         self.p.sendline(testline)
         while len(self.p.sentlines) == 1:
             sleep(0.01)
-        self.p.s.write.assert_called_with('N2 with new line*44\n')
+
+        self.p.s.write.assert_called_with(b'N1 no new line*44\n')
+
+        testline = 'with new line\n'
+        self.p.sendline(testline)
+        while len(self.p.sentlines) == 2:
+            sleep(0.01)
+        self.p.s.write.assert_called_with(b'N2 with new line*44\n')
 
     def test_start(self):
         self.assertIsNone(self.p._read_thread)

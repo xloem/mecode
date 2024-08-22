@@ -171,6 +171,7 @@ class Printer(object):
             self._buffer = []
             self.responses = []
             self.sentlines = []
+        self._disconnect_pending = False
         logger.debug('Disconnected from printer')
 
     def load_file(self, filepath):
