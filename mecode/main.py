@@ -505,6 +505,7 @@ class G(object):
         --------
         >>> # move the tool head 10 mm in x and 10 mm in y
         >>> g.move(x=10, y=10)
+        
         >>> # the x, y, and z keywords may be omitted:
         >>> g.move(10, 10, 10)
 

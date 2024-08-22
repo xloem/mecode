@@ -83,6 +83,7 @@ class GMatrix(G):
         if y is None: y = 0
 
         transform = matrix * np.array([x, y]).T
+        # transform = matrix @ np.array([x, y])
         
         return (transform.item(0), transform.item(1), z)
 
@@ -112,8 +113,10 @@ class GMatrix(G):
         super(GMatrix, self).arc(x=x_prime,y=y_prime,z=z_prime,direction=direction,radius=radius,
                                  helix_dim=helix_dim, helix_len=helix_len,
                                  **kwargs)
+   
     @property
     def current_position(self):
+        print('matrix current position')
         x = self._current_position['x']
         y = self._current_position['y']
         z = self._current_position['z']
@@ -125,12 +128,21 @@ class GMatrix(G):
         # Get the latest matrix from the stack
         matrix = self.matrix_stack[-1]
 
+        
         # Calculate the inverse of the matrix using numpy.linalg.inv
         inverse_matrix = np.linalg.inv(matrix)
 
         # Perform matrix multiplication using @ operator
-        transform = inverse_matrix @ np.array([x, y]) #.T
+        transform = inverse_matrix @ np.array([x, y]).T
+
+        # transform = np.dot(inverse_matrix, np.array([x,y]))
         # transform = inverse_matrix * np.array([x, y])
+        # transform = matrix @ np.array([x, y])
+
+        print('\nmatrix', matrix)
+        print('inverse', inverse_matrix)
+        print('transform', transform)
+        print('x,y', x, y)
 
         # Return the transformed coordinates
         return {'x': transform[0], 'y': transform[1], 'z': z}
