@@ -61,8 +61,8 @@ class TestGMatrix(TestGFixture):
         G1 F10
         G1 X-5.000000 Y0.000000;
         G1 X0.000000 Y10.000000;
-        G1 X5.000000 Y-0.000000;
-        G1 X-0.000000 Y-10.000000;
+        G1 X5.000000 Y0.000000;
+        G1 X0.000000 Y-10.000000;
         """)
         self.g.pop_matrix()
         self.assert_output()
