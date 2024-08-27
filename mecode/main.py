@@ -505,7 +505,7 @@ class G(object):
         --------
         >>> # move the tool head 10 mm in x and 10 mm in y
         >>> g.move(x=10, y=10)
-        
+
         >>> # the x, y, and z keywords may be omitted:
         >>> g.move(10, 10, 10)
 
@@ -2788,6 +2788,9 @@ class G(object):
         args = []
 
         def format_value(axis, value):
+            # ensure values like -0.0000 are actually set to zero
+            value = 0 if value == 0 else value
+                
             # Replace values effectively close to zero with 0.0 to avoid negative zero
             return '{0}{1:.{digits}f}'.format(axis, 0 if abs(value) < epsilon else value, digits=d)
 

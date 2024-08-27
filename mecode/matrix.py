@@ -1,8 +1,8 @@
-
-import math
 import copy
 import numpy as np
 from mecode import G
+import warnings
+
 
 class GMatrix(G):
     """This class passes points through a 2D transformation matrix before
@@ -33,117 +33,122 @@ class GMatrix(G):
     numpy is required.
 
     """
+
     def __init__(self, *args, **kwargs):
         super(GMatrix, self).__init__(*args, **kwargs)
-        self._matrix_setup()
-        self.position_savepoints = []
-        
-    # Position savepoints #####################################################        
-    def save_position(self):
-        self.position_savepoints.append((self.current_position["x"],
-                                         self.current_position["y"],
-                                         self.current_position["z"]))
-
-    def restore_position(self):
-        return_position = self.position_savepoints.pop()
-        self.abs_move(return_position[0], return_position[1], return_position[2])
-
-
-    # Matrix manipulation #####################################################        
-    def _matrix_setup(self):
-        " Create our matrix stack. "
-        self.matrix_stack = [np.array([[1.0, 0], [0.0, 1.0]])]
+        # self._matrix_setup()
+        self.stack = [np.identity(3)]
+        # self.position_savepoints = []
 
     def push_matrix(self):
-        " Push a copy of our current transformation matrix. "
-        self.matrix_stack.append(copy.deepcopy(self.matrix_stack[-1]))
+        # Push a copy of the current matrix onto the stack
+        self.stack.append(self.stack[-1].copy())
 
     def pop_matrix(self):
-        " Pop the matrix stack. "
-        self.matrix_stack.pop()
+        # Pop the top matrix off the stack
+        if len(self.stack) > 1:
+            self.stack.pop()
+        else:
+            self.stack = [np.identity(3)]
+            warnings.warn(
+                "Cannot pop all items from stack. Setting stack to default identity matrix. To save transforms to stack, call g.push_matrix() before applying transformation."
+            )
+            # raise IndexError("Cannot pop from an empty matrix stack")
+
+    def apply_transform(self, transform):
+        # Apply a transformation matrix to the current matrix
+        transormed_matrix = self.stack[-1] @ transform
+
+        # get machine epsilon
+        epsilon = np.finfo(transormed_matrix.dtype).eps
+
+        # round values smaller than machine epsilon to zero
+        self.stack[-1] = np.where(
+            np.abs(transormed_matrix) < epsilon, 0, transormed_matrix
+        )
+
+    def get_current_matrix(self):
+        # Get the current matrix (top of the stack)
+        return self.stack[-1]
+
+    def translate(self, x, y):
+        # Create a translation matrix and apply it
+        translation_matrix = np.array([[1, 0, x], [0, 1, y], [0, 0, 1]])
+        self.apply_transform(translation_matrix)
 
     def rotate(self, angle):
-        """Rotate the current transformation matrix around the Z
-        axis, in radians. """
-        rotation_matrix = np.array([[math.cos(angle), -math.sin(angle)],
-                                     [math.sin(angle), math.cos(angle)]])
+        # Create a rotation matrix for the angle
+        c = np.cos(angle)
+        s = np.sin(angle)
+        rotation_matrix = np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]])
+        self.apply_transform(rotation_matrix)
 
-        self.matrix_stack[-1] = rotation_matrix * self.matrix_stack[-1]
+    def scale(self, sx, sy=None):
+        if sy is None:
+            sy = sx
 
-    def scale(self, scale):
-        " Scale the current transformation matrix. "
-        scale_matrix = np.identity(2) * scale
-        self.matrix_stack[-1] = scale_matrix * self.matrix_stack[-1]
-
-    def _matrix_transform(self, x, y, z):
-        "Transform an x,y,z coordinate by our transformation matrix."
-        matrix = self.matrix_stack[-1]
-
-        if x is None: x = 0
-        if y is None: y = 0
-
-        transform = matrix * np.array([x, y]).T
-        # transform = matrix @ np.array([x, y])
-        
-        return (transform.item(0), transform.item(1), z)
-
-    def _matrix_transform_length(self, length):
-        (x,y,z) = self._matrix_transform(length, 0, 0)
-        return math.sqrt(x**2 + y**2 + z**2)
+        # Create a scaling matrix and apply it
+        scaling_matrix = np.array([[sx, 0, 0], [0, sy, 0], [0, 0, 1]])
+        self.apply_transform(scaling_matrix)
 
     def abs_move(self, x=None, y=None, z=None, **kwargs):
-        if x is None: x = self.current_position['x']
-        if y is None: y = self.current_position['y']
-        if z is None: z = self.current_position['z']
+        # if x is None or y is None or z is None:
+        #     raise ValueError('x, y, and z must be provided when using the GMatrix class.')
+
+        if x is None:
+            x = self.current_position["x"]
+        if y is None:
+            y = self.current_position["y"]
+        if z is None:
+            z = self.current_position["z"]
+
         # abs_move ends up invoking move, which means that
         # we don't need to do a matrix transform here.
-        super(GMatrix, self).abs_move(x,y,z, **kwargs)
+        # NOTE: this also ends up calling `move` below instead of the parent class since method is overriden below
+        super(GMatrix, self).abs_move(x, y, z, **kwargs)
 
     def move(self, x=None, y=None, z=None, **kwargs):
-        (x,y,z) = self._matrix_transform(x,y,z)
-        super(GMatrix, self).move(x,y,z, **kwargs)
+        x_p, y_p, z_p = self._transform_point(x, y, z)
 
-    def arc(self, x=None, y=None, z=None, direction='CW', radius='auto',
-            helix_dim=None, helix_len=0, **kwargs):
-        (x_prime,y_prime,z_prime) = self._matrix_transform(x,y,z)
-        if x is None: x_prime = None
-        if y is None: y_prime = None
-        if z is None: z_prime = None
-        if helix_len: helix_len = self._matrix_transform_length(helix_len)
-        super(GMatrix, self).arc(x=x_prime,y=y_prime,z=z_prime,direction=direction,radius=radius,
-                                 helix_dim=helix_dim, helix_len=helix_len,
-                                 **kwargs)
-   
-    @property
-    def current_position(self):
-        print('matrix current position')
-        x = self._current_position['x']
-        y = self._current_position['y']
-        z = self._current_position['z']
+        # NOTE: untransformed z is being used here. If support for 3D transformations is added, this should be updated
+        super(GMatrix, self).move(x_p, y_p, z, **kwargs)
 
-        # Ensure x and y are not None; default to 0.0
-        if x is None: x = 0.0
-        if y is None: y = 0.0
+    def _transform_point(self, x, y, z):
+        current_matrix = self.get_current_matrix()
 
-        # Get the latest matrix from the stack
-        matrix = self.matrix_stack[-1]
+        if x is None:
+            x = 0
+        if y is None:
+            y = 0
+        if z is None:
+            z = 0
 
-        
-        # Calculate the inverse of the matrix using numpy.linalg.inv
-        inverse_matrix = np.linalg.inv(matrix)
+        return current_matrix @ np.array([x, y, z])
 
-        # Perform matrix multiplication using @ operator
-        transform = inverse_matrix @ np.array([x, y]).T
+    # @property
+    # def current_position(self):
+    #     # x = self._current_position['x']
+    #     # y = self._current_position['y']
+    #     # z = self._current_position['z']
 
-        # transform = np.dot(inverse_matrix, np.array([x,y]))
-        # transform = inverse_matrix * np.array([x, y])
-        # transform = matrix @ np.array([x, y])
+    #     # Ensure x and y are not None; default to 0.0
+    #     # if x is None: x = 0.0
+    #     # if y is None: y = 0.0
 
-        print('\nmatrix', matrix)
-        print('inverse', inverse_matrix)
-        print('transform', transform)
-        print('x,y', x, y)
+    #     # Get the latest matrix from the stack
+    #     current_matrix = self.get_current_matrix()
+    #     inverse_matrix = np.linalg.inv(current_matrix)
 
-        # Return the transformed coordinates
-        return {'x': transform[0], 'y': transform[1], 'z': z}
+    #     # TODO: INVERSE OR CURRENT_MATRIX ???
+    #     # x, y, z = current_matrix @ np.array([x, y, z])
+    #     x_p, y_p, _ = current_matrix @ np.array([
+    #         self._current_position['x'],
+    #         self._current_position['y'],
+    #         self._current_position['z']
+    #     ])
 
+    #     transformed_position = {**self._current_position}
+    #     print('>>current position ', self._current_position)
+    #     transformed_position.update({'x': x_p, 'y': y_p, 'z': self._current_position['z']})
+    #     # return {'x': x, 'y': y, 'z': z_p}
+    #     return transformed_position
