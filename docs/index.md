@@ -42,7 +42,7 @@ yourself manually writing your own GCode, then mecode is for you.
 
     ---
 
-    Multimaterial support enabled on multiaxis printers via [`rename_axis`](/api-reference/mecode/#mecode.main.G.rename_axis)
+    Multimaterial support enabled on multiaxis printers via [`rename_axis`](api-reference/mecode.md/#mecode.main.G.rename_axis)
 
     [:octicons-arrow-right-24: Multimaterial example](tutorials/multimaterial-printing.md)
 

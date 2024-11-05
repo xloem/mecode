@@ -1,6 +1,6 @@
 ## Example: using matplotlib axes to extend plotting capabilities
 
-By passing an `axes` handle to [`view()`](/mecode/api-reference/mecode/#mecode.main.G.view) you can take advantage of all plotting features from [matplotlib](https://matplotlib.org).
+By passing an `axes` handle to [`view()`](api-reference/mecode.md/#mecode.main.G.view) you can take advantage of all plotting features from [matplotlib](https://matplotlib.org).
 
 ```python
 from mecode import G
@@ -53,7 +53,7 @@ plt.show()
     ```
 
 ### Result: example using matplotlib patches.Rectangle 
-![](/mecode/assets/images/visualization_example.png)
+![](../assets/images/visualization_example.png)
 
 ## Example: printing droplets
 ```python
@@ -129,4 +129,4 @@ plt.show()
     ;       0.0 hrs
     ```
 ### Result
-![](/mecode/assets/images/droplet_example.jpg)
+![](../assets/images/droplet_example.jpg)

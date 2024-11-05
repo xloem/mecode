@@ -44,7 +44,7 @@ with G(outfile='file.gcode') as g:
 When the `with` block is exited, `g.teardown()` will be automatically called.
 
 The resulting toolpath can be visualized in 3D using the [`matplotlib`](https://matplotlib.org/) or [`vpython`](https://vpython.org/)
-package with the [`view()`](/mecode/api-reference/mecode/#mecode.main.G.view) method:
+package with the [`view()`](api-reference/mecode.md/#mecode.main.G.view) method:
 
 ```python
 g = G()

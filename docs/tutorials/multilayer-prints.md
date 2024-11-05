@@ -118,4 +118,4 @@ g.view()
             0.0 hrs
     ```
 
-<img src="/mecode/assets/images/multilayer_example.png">
+<img src="../assets/images/multilayer_example.png">

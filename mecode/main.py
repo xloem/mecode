@@ -620,6 +620,163 @@ class G(object):
             self.arc(x=-radius, y=-radius, radius=radius, direction='CCW', linearize=linearize, **kwargs)
             self.arc(x=radius, y=-radius, radius=radius, direction='CCW', linearize=linearize, **kwargs)
             self.arc(x=radius, y=radius, radius=radius, direction='CCW', linearize=linearize, **kwargs)
+    def _arc_points(self, center, radius, start_angle, end_angle, num_points=100):
+        """
+        Calculate points along a circular arc.
+
+        :param center: Tuple of (x, y) coordinates of the arc center
+        :param radius: Radius of the arc
+        :param start_angle: Starting angle in radians
+        :param end_angle: Ending angle in radians
+        :param num_points: Number of points to generate along the arc
+        :return: List of points along the arc as (x, y)
+        """
+        angles = np.linspace(start_angle, end_angle, num_points)
+        points = [(center[0] + radius * np.cos(angle), center[1] + radius * np.sin(angle)) for angle in angles]
+
+        return points
+
+    def _g02(self, center, radius, start_point, end_point, clockwise=True, num_points=100):
+        """
+        Generate points for clockwise circular arc (G02).
+
+        :param center: Tuple of (x, y) coordinates of the arc center
+        :param radius: Radius of the arc
+        :param start_point: Tuple of (x, y) coordinates of the starting point
+        :param end_point: Tuple of (x, y) coordinates of the end point
+        :param clockwise: Boolean indicating direction (True for clockwise)
+        :param num_points: Number of points to generate along the arc
+        :return: List of points along the arc as (x, y)
+        """
+        start_angle = np.arctan2(start_point[1] - center[1], start_point[0] - center[0])
+        end_angle = np.arctan2(end_point[1] - center[1], end_point[0] - center[0])
+        
+        if clockwise:
+            if end_angle > start_angle:
+                end_angle -= 2 * np.pi
+        else:
+            if start_angle > end_angle:
+                start_angle -= 2 * np.pi
+                
+        return self._arc_points(center, radius, start_angle, end_angle, num_points)
+    
+    def _g03(self, center, radius, start_point, end_point):
+        """
+        Generate points for counterclockwise circular arc (G03).
+
+        :param center: Tuple of (x, y) coordinates of the arc center
+        :param radius: Radius of the arc
+        :param start_point: Tuple of (x, y) coordinates of the starting point
+        :param end_point: Tuple of (x, y) coordinates of the end point
+        :param counterclockwise: Boolean indicating direction (True for counterclockwise)
+        :param num_points: Number of points to generate along the arc
+        :return: List of points along the arc as (x, y)
+        """
+        return self._g02(center, radius, start_point, end_point, clockwise=False)
+
+    def arc_v2(self, end_point, center, radius, plane='xy', direction='CW', linearize=True, **kwargs):
+        if plane not in {'xy', 'yz', 'xz'}:
+            raise ValueError("Plane must be one of 'xy', 'yz', or 'xz'.")
+        if direction not in {'CW', 'CCW'}:
+            raise ValueError("Direction must be 'CW' or 'CCW'.")
+
+        if self.z_axis != 'Z':
+            axis = self.z_axis
+
+        if direction == 'CW':
+            points = self._g02(center, radius, (0,0), end_point)
+        elif direction == 'CCW':
+            points = self._g03(center, radius, (0,0), end_point)
+
+        rel_pts = []
+        for i in range(1, len(points)):
+            dx0 = points[i][0] - points[i-1][0]
+            dx1 = points[i][1] - points[i-1][1]
+            rel_pts.append((dx0, dx1))
+
+        command = 'G02' if direction == 'CW' else 'G03'
+        for x0, x1 in rel_pts:
+            if plane == 'xy':
+                if linearize:
+                    self.move(x=x0, y=x1, **kwargs)
+                else:
+                    # left in for visualization purposes
+                    self._update_current_position(x=x0, y=x1)
+            elif plane == 'yz':
+                if linearize:
+                    self.move(y=x0, z=x1, **kwargs)
+                else:
+                    # left in for visualization purposes
+                    self._update_current_position(y=x0, z=x1)
+            elif plane == 'xz':
+                if linearize:
+                    self.move(x=x0, z=x1, **kwargs)
+                else:
+                    # left in for visualization purposes
+                    self._update_current_position(x=x0, z=x1)
+
+        if plane == 'xy':
+            plane_selector = 'G17'
+            args = self._format_args(x=end_point[0], y=end_point[1])
+        elif plane == 'yz':
+            plane_selector = 'G19'
+            args = self._format_args(y=end_point[0], z=end_point[1])
+        elif plane == 'xz':
+            plane_selector = 'G18'
+            args = self._format_args(x=end_point[0], z=end_point[1])
+        
+        self.write(f'{plane_selector} {command} {args} {radius:.{self.output_digits}f}')
+
+    def abs_arc_v2(self, end_point, center, radius, plane='xy', direction='CW', linearize=True, **kwargs):
+        if plane not in {'xy', 'yz', 'xz'}:
+            raise ValueError("Plane must be one of 'xy', 'yz', or 'xz'.")
+        if direction not in {'CW', 'CCW'}:
+            raise ValueError("Direction must be 'CW' or 'CCW'.")
+
+        if plane == 'xy':
+            start_point = self._current_position['x'], self._current_position['y']
+        elif plane == 'yz':
+            start_point = self._current_position['y'], self._current_position['z']
+        elif plane == 'xz':
+            start_point = self._current_position['x'], self._current_position['z']
+
+        if direction == 'CW':
+            points = self._g02(center, radius, start_point, end_point)
+        elif direction == 'CCW':
+            points = self._g03(center, radius, start_point, end_point)
+
+        command = 'G02' if direction == 'CW' else 'G03'
+        for x0, x1 in points:
+            if plane == 'xy':
+                if linearize:
+                    self.abs_move(x=x0, y=x1, **kwargs)
+                else:
+                    # left in for visualization purposes
+                    self._update_current_position(x=x0, y=x1)
+            elif plane == 'yz':
+                if linearize:
+                    self.abs_move(y=x0, z=x1, **kwargs)
+                else:
+                    # left in for visualization purposes
+                    self._update_current_position(y=x0, z=x1)
+            elif plane == 'xz':
+                if linearize:
+                    self.abs_move(x=x0, z=x1, **kwargs)
+                else:
+                    # left in for visualization purposes
+                    self._update_current_position(x=x0, z=x1)
+
+        if plane == 'xy':
+            plane_selector = 'G17'
+            args = self._format_args(x=end_point[0], y=end_point[1])
+        elif plane == 'yz':
+            plane_selector = 'G19'
+            args = self._format_args(y=end_point[0], z=end_point[1])
+        elif plane == 'xz':
+            plane_selector = 'G18'
+            args = self._format_args(x=end_point[0], z=end_point[1])
+        
+        self.write(f'{plane_selector} {command} {args} {radius:.{self.output_digits}f}')
 
     def arc(self, x=None, y=None, z=None, direction='CW', radius='auto',
             helix_dim=None, helix_len=0, linearize=True, color=(0,1,0,0.5), **kwargs):
