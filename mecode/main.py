@@ -2794,67 +2794,54 @@ class G(object):
 
         Parameters
         ----------
-        backend : str (default: 'matplotlib')
-            The plotting backend to use, one of 'matplotlib' or 'mayavi'.
-            'matplotlib2d' has been addded to better visualize mixing.
-            'vpython' has been added to generate printing animations
-            for debugging.
+        backend : str (default: '3d')
+            The plotting backend to use. Must be one of {'2d', '3d', 'animated'}. For backward compatibility, backend could also be one of {'matplotlib', 'vpython'}
         outfile : str (default: 'None')
             When using the 'matplotlib' backend,
             an image of the output will be save to the location specified
             here.
-        color_on : bool (default: 'False')
-            When using the 'matplotlib' or 'matplotlib2d' backend,
-            the generated image will display the color associated
-            with the g.move command. This was primarily used for mixing
-            nozzle debugging.
+        color_on : bool (default: 'True')
+            If True, will display image with the color associated with the g.move command. This is helpful for multi-material printing or debugging.
         nozzle_cam : bool (default: 'False')
-            When using the 'vpython' backend and nozzle_cam is set to
+            When using the 'animated' or 'vpython' backend and nozzle_cam is set to
             True, the camera will remained centered on the tip of the
             nozzle during the animation.
         fast_forward : int (default: 1)
-            When using the 'vpython' backend, the animation can be
+            When using the 'animated' or 'vpython' backend, the animation can be
             sped up by the factor specified in the fast_forward
             parameter.
         nozzle_dims : list (default: [1.0,20.0])
-            When using the 'vpython' backend, the dimensions of the
+            When using the 'animated' or 'vpython' backend, the dimensions of the
             nozzle can be specified using a list in the format:
             [nozzle_diameter, nozzle_length].
         substrate_dims: list (default: [0.0,0.0,-0.5,100,1,100])
-            When using the 'vpython' backend, the dimensions of the
+            When using the 'animated' or 'vpython' backend, the dimensions of the
             planar substrate can be specified using a list in the
             format: [x, y, z, length, height, width].
         scene_dims: list (default: [720,720])
-            When using the 'vpython' backened, the dimensions of the
+            When using the 'animated' or 'vpython' backened, the dimensions of the
             viewing window can be specified using a list in the
             format: [width, height]
         ax : matplotlib axes object
             Useful for adding additional functionailities to plot when debugging.
+        cross_section : str (default: 'xy')
+            Determines what cross section / plane to display when When using the '2d' or '3d' backend.
+        shape : str (default : 'filament')
+            Determines what shape to display when using the '3d' or 'animated' backend. Helpful for visualizing non-filament based printing (e.g., droplet-based).
+            Must be one of {'filament', 'droplet'}.
+        
 
         """
         from mecode_viewer import plot2d, plot3d, animation
-        # import matplotlib.cm as cm
-        # from mpl_toolkits.mplot3d import Axes3D
-        # import matplotlib.pyplot as plt
-        # history = np.array(self.position_history)
-
-        # use_local_ax = True if ax is None else False
 
         if backend == '2d':
            ax = plot2d(self.history, ax=ax, hide_travel=hide_travel, **kwargs)
-
-
-
         elif backend == 'matplotlib' or backend == '3d':
             ax = plot3d(self.history, ax=ax, hide_travel=hide_travel, **kwargs)
-
-            return ax
-
         elif backend == 'mayavi':
             # from mayavi import mlab
             # mlab.plot3d(history[:, 0], history[:, 1], history[:, 2])
             raise ValueError(f'The {backend} backend is not currently supported.')
-
         elif backend == 'vpython' or backend == 'animated':
             animation(self.history,
                         outfile,
@@ -2869,7 +2856,7 @@ class G(object):
                         **kwargs)
 
         else:
-            raise Exception("Invalid plotting backend! Choose one of matplotlib or matplotlib2d or vpython.")
+            raise Exception("Invalid plotting backend! Choose one of {'2d', '3d', 'animated'}.")
 
     def write(self, statement_in, resp_needed=False):
         if self.print_lines:
