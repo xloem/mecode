@@ -30,7 +30,7 @@ jobs:
       - run: pip install mkdocs-material
       - run: pip install 'mkdocstrings[python]'
       - run: pip install . # install local mecode
-      
+      - run: pip install mike
       # Install hatch
       - run: pip install hatch  # Ensure hatch is installed
 
