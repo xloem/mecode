@@ -75,6 +75,8 @@ nav:
       - profilometer: api-reference/profilometer_parse.md
 plugins:
   - search
+  - mike:
+      alias_type: symlink
   - mkdocstrings:
       default_handler: python
       handlers:

@@ -1,7 +1,12 @@
 Mecode
 ======
-  `
-[![Unit Tests](https://github.com/rtellez700/mecode/actions/workflows/python-package.yml/badge.svg)](https://github.com/rtellez700/mecode/actions/workflows/python-package.yml) ![](https://img.shields.io/badge/python-3.0+-blue.svg) ![t](https://img.shields.io/badge/status-maintained-yellow.svg) [![](https://img.shields.io/github/license/rtellez700/mecode.svg)](https://github.com/rtellez700/mecode/blob/main/LICENSE.md) 
+
+[![Unit Tests](https://github.com/rtellez700/mecode/actions/workflows/python-package.yml/badge.svg)](https://github.com/rtellez700/mecode/actions/workflows/python-package.yml)
+[![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)
+![](https://img.shields.io/badge/python-3.10+-blue.svg)
+![Status](https://img.shields.io/badge/status-maintained-yellow.svg)
+[![](https://img.shields.io/github/license/rtellez700/mecode.svg)](https://github.com/rtellez700/mecode/blob/main/LICENSE.md)
+
 
 ### GCode for all
 
