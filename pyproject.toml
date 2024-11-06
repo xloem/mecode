@@ -1,0 +1,46 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mecode"
+dynamic = ["version"]
+description = "Simple GCode generator"
+readme = "README.md"
+license = "MIT"
+requires-python=">=3.10"
+authors = [
+    { name = "Rodrigo Telles", email = "rtelles@g.harvard.edu" },
+]
+keywords = [
+    "3dprinting",
+    "additive",
+    "cnc",
+    "gcode",
+    "reprap",
+]
+dependencies = [
+    "matplotlib",
+    "mecode-viewer>=0.3.14",
+    "numpy",
+    "pyserial",
+    "requests",
+    "solidpython",
+    "vpython",
+]
+
+[project.urls]
+Download = "https://github.com/rtellez700/mecode/tarball/master"
+Homepage = "https://github.com/rtellez700/mecode"
+
+[tool.hatch.version]
+path = "mecode/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/mecode",
+]
+exclude = [
+    "./github",
+    "/docs"
+]
