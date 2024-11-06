@@ -1,6 +1,6 @@
 ## Matrix Transforms
 
-A wrapper class, [GMatrix](api-reference/mecode.md/#mecode.main.G) will run all move and arc commands through a 
+A wrapper class, [GMatrix](../api-reference/mecode.md/#mecode.main.G) will run all move and arc commands through a 
 2D transformation matrix before forwarding them to `G`.
 
 To use, simply instantiate a `GMatrix` object instead of a `G` object:

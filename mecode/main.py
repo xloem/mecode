@@ -1056,7 +1056,7 @@ class G(object):
                 self.move(x=x)
 
     def round_rect(self, x, y, direction='CW', start='LL', radius=0, linearize=True):
-        """ Trace a rectangle with the given width and height with rounded corners,
+        r""" Trace a rectangle with the given width and height with rounded corners,
             note that starting point is not actually in corner of rectangle.
 
         Parameters

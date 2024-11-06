@@ -1,7 +1,7 @@
 ## Multimaterial Printing
 
 When working with a machine that has more than one Z-Axis, it is
-useful to use the [`rename_axis()`](api-reference/mecode.md/#mecode.main.G.rename_axis) function. Using this function your
+useful to use the [`rename_axis()`](../api-reference/mecode.md/#mecode.main.G.rename_axis) function. Using this function your
 code can always refer to the vertical axis as 'Z' or whatever you provide as an argument. You can also dynamically rename the axis. For example, if you run `g.move(A=3)`-- this would correspond to a gcode command addressing the `A` axis: `G1 A3`. The latter approached is illustrated in the example below.
 
 ## Example: Hollow Cylinder

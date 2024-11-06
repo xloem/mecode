@@ -27,4 +27,5 @@ jobs:
             mkdocs-material-
       - run: pip install mkdocs-material
       - run: pip install 'mkdocstrings[python]'
+      - run: pip install . # install local mecode
       - run: mkdocs gh-deploy --force

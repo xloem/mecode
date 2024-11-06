@@ -54,11 +54,12 @@ nav:
       - Installation: install.md
       - Quick Start: quick-start.md
       - Tutorials:
-        - Multilayer Prints: tutorials/multilayer-prints.md
-        - UV Curing on-the-fly: tutorials/in-situ-uv-curing.md
-        - Multimaterial Printing: tutorials/multimaterial-printing.md
-        - Matrix Transformation: tutorials/matrix-transformations.md
-        - Advanced Visualization: tutorials/visualization.md
+          - Multilayer Prints: tutorials/multilayer-prints.md
+          - UV Curing on-the-fly: tutorials/in-situ-uv-curing.md
+          - Multimaterial Printing: tutorials/multimaterial-printing.md
+          - Matrix Transformation: tutorials/matrix-transformations.md
+          - Advanced Visualization: tutorials/visualization.md
+          - Serial Communication: tutorials/serial-communication.md  # Add this
     - Learn:
       - Under the hood: learn.md
     - About:
@@ -66,10 +67,12 @@ nav:
       - Contributing: contributing.md
       - License: license.md
   - API Reference:
-    - mecode: api-reference/mecode.md
-    - matrix: api-reference/matrix.md
-    - printer: api-reference/printer.md
-    - profilometer: api-reference/profilometer_parse.md
+      - mecode: api-reference/mecode.md
+      - matrix: api-reference/matrix.md
+      - matrix3D: api-reference/matrix3D.md  # Add this
+      # - General API: api-reference/api-reference.md  # Add this
+      - printer: api-reference/printer.md
+      - profilometer: api-reference/profilometer_parse.md
 plugins:
   - search
   - mkdocstrings:
@@ -79,6 +82,7 @@ plugins:
           paths: [mecode]
           options:
             docstring_style: numpy
+            show_source: true
 markdown_extensions:
   - admonition
   - attr_list

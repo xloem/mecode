@@ -1,5 +1,5 @@
 
-[`g.omni_intensity()`](api-reference/mecode.md/#mecode.main.G.omni_intensity) can be used to set the intensity of a Omnicure S2000. [`g.omni_on()`](api-reference/mecode.md/#mecode.main.G.omni_on) and [`g.omni_off()`](api-reference/mecode.md/#mecode.main.G.omni_off) is then used to turn on and off the UV light, respectively.
+[`g.omni_intensity()`](../api-reference/mecode.md/#mecode.main.G.omni_intensity) can be used to set the intensity of a Omnicure S2000. [`g.omni_on()`](../api-reference/mecode.md/#mecode.main.G.omni_on) and [`g.omni_off()`](../api-reference/mecode.md/#mecode.main.G.omni_off) is then used to turn on and off the UV light, respectively.
 
 ## Example: UV curing on-the-fly
 
