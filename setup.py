@@ -1,8 +1,17 @@
+import re
 from os import path
 from setuptools import setup, find_packages
 
+def get_version():
+    with open("mecode/__init__.py") as f:
+        content = f.read()
+    match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", content, re.M)
+    if match:
+        return match.group(1)
+    raise RuntimeError("Unable to find version string.")
+
 INFO = {'name': 'mecode',
-        'version': '0.4.4',
+        'version': get_version(),
         'description': 'Simple GCode generator',
         'author': 'Rodrigo Telles',
         'author_email': 'rtelles@g.harvard.edu',
