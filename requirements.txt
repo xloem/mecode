@@ -4,4 +4,4 @@ matplotlib
 vpython
 pyserial
 requests
-mecode-viewer>=0.3.12
+mecode-viewer>=0.3.13
