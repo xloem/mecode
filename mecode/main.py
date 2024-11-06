@@ -486,7 +486,7 @@ class G(object):
         self.write(f'MOVEINC {axis} {disp:.6f} {speed:.6f}')
         # self.extrude = False
 
-    def move(self, x=None, y=None, z=None, rapid=False, color=DEFAULT_FILAMENT_COLOR, comment='', **kwargs):
+    def move(self, x=None, y=None, z=None, k=None, theta=None, rapid=False, color=DEFAULT_FILAMENT_COLOR, comment='', **kwargs):
         """ Move the tool head to the given position. This method operates in
         relative mode unless a manual call to [absolute][mecode.main.G.absolute] was given previously.
         If an absolute movement is desired, the [abs_move][mecode.main.G.abs_move] method is
@@ -494,6 +494,11 @@ class G(object):
 
         points : floats
             Must specify endpoint as kwargs, e.g. x=5, y=5
+        k : Vector (default: None)
+            If supplied, will rotate points (x,y,z) about the axis given by k in accordance with 
+            the Rodrigues' formula: v'=vcos(θ)+(k x v)sin(θ)+k(k⋅v)(1 - cos(θ))
+        theta : float (default: None)
+            Used together with k for Rodrigues' formula
         rapid : Bool (default: False)
             Executes an uncoordinated move to the specified location.
         color : hex string or rgb(a) string
@@ -544,7 +549,19 @@ class G(object):
             filament_length = ((4*volume)/(3.14149*self.filament_diameter**2))*self.extrusion_multiplier
             kwargs['E'] = filament_length + current_extruder_position
 
-        self._update_current_position(x=x, y=y, z=z, color=color, **kwargs)
+        if k is None:
+            self._update_current_position(x=x, y=y, z=z, color=color, **kwargs)
+        else:
+            if theta is None:
+                raise ValueError(f'Both k and theta need to be supplied but got k={k} and theta={theta}')
+            v = np.array([x, y, z])
+            k = k / np.linalg.norm(k)  # Ensure k is a unit vector
+            v_rot = (v * np.cos(theta) +
+                    np.cross(k, v) * np.sin(theta) +
+                    k * np.dot(k, v) * (1 - np.cos(theta)))
+            
+            x,y,z = v_rot
+
         self._update_print_time(x,y,z)
         # new_state = self.history[-1].copy()
         # new_state['COORDS'] = (x, y, z)
