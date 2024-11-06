@@ -742,7 +742,7 @@ class G(object):
             plane_selector = 'G18'
             args = self._format_args(x=end_point[0], z=end_point[1])
         
-        self.write(f'{plane_selector} {command} {args} {radius:.{self.output_digits}f}')
+        self.write(f'{plane_selector} {command} {args} R{radius:.{self.output_digits}f}')
 
     def abs_arc_v2(self, end_point, center, radius, plane='xy', direction='CW', linearize=True, **kwargs):
         if plane not in {'xy', 'yz', 'xz'}:
