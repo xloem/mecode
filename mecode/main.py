@@ -211,7 +211,8 @@ class G(object):
             try:
                 import pkg_resources  # part of setuptools
 
-                version = pkg_resources.require("mecode")[0].version
+                # version = pkg_resources.require("mecode")[0].version
+                version = pkg_resources.require("mecode")[0].split(" ")[-1]
 
                 return version
             except:
