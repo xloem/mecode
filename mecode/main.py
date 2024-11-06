@@ -732,17 +732,18 @@ class G(object):
                     # left in for visualization purposes
                     self._update_current_position(x=x0, z=x1)
 
-        if plane == 'xy':
-            plane_selector = 'G17'
-            args = self._format_args(x=end_point[0], y=end_point[1])
-        elif plane == 'yz':
-            plane_selector = 'G19'
-            args = self._format_args(y=end_point[0], z=end_point[1])
-        elif plane == 'xz':
-            plane_selector = 'G18'
-            args = self._format_args(x=end_point[0], z=end_point[1])
-        
-        self.write(f'{plane_selector} {command} {args} R{radius:.{self.output_digits}f}')
+        if linearize is False:
+            if plane == 'xy':
+                plane_selector = 'G17'
+                args = self._format_args(x=end_point[0], y=end_point[1])
+            elif plane == 'yz':
+                plane_selector = 'G19'
+                args = self._format_args(y=end_point[0], z=end_point[1])
+            elif plane == 'xz':
+                plane_selector = 'G18'
+                args = self._format_args(x=end_point[0], z=end_point[1])
+            
+            self.write(f'{plane_selector} {command} {args} R{radius:.{self.output_digits}f}')
 
     def abs_arc_v2(self, end_point, center, radius, plane='xy', direction='CW', linearize=True, **kwargs):
         if plane not in {'xy', 'yz', 'xz'}:
