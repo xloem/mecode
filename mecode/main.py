@@ -211,14 +211,13 @@ class G(object):
             try:
                 import pkg_resources  # part of setuptools
 
-                # version = pkg_resources.require("mecode")[0].version
-                version = pkg_resources.require("mecode")[0].split(" ")[-1]
+                version = pkg_resources.require("mecode")[0].version
 
                 return version
             except:
                 return None
 
-        def read_version_from_github(username, repo, path='setup.py'):
+        def read_version_from_github(username, repo, path='mecode/__init__.py'):
             # GitHub raw content URL
             raw_url = f'https://raw.githubusercontent.com/{username}/{repo}/main/{path}'
 
@@ -228,7 +227,7 @@ class G(object):
                 response.raise_for_status()  # Raise an exception for HTTP errors
 
                 # Use regular expression to find the version string
-                version_match = re.search(r"'version': ['\"]([^'\"]*)['\"]", response.text)
+                version_match = re.search(r"__version__\s*=\s*'(\d+\.\d+\.\d+)'", response.text)
 
                 if version_match:
                     version = version_match.group(1)
@@ -257,8 +256,6 @@ class G(object):
             if local_package_version is not None and remote_package_version is not None:
                 if version.parse(local_package_version) < version.parse(remote_package_version):
                     print("A new mecode version is available. To upgrade to the latest version run:\n\t>>> pip install git+https://github.com/rtellez700/mecode.git --upgrade")
-        
-        self.write(f"; made using mecode {local_package_version}")
 
     def __enter__(self):
         """
@@ -424,11 +421,23 @@ class G(object):
 
     # Composed Functions  #####################################################
 
+    def _write_mecode_version(self):
+        version_str = f"made using mecode {self.version}"
+
+        total_width = len(version_str)
+
+        semicolon_line = ";" * total_width
+
+        self.write(semicolon_line)
+        self.write(f';;; {version_str} ;;;')
+        self.write(semicolon_line)
+
     def setup(self):
         """ Set the environment into a consistent state to start off. This
         method must be called before any other commands.
 
         """
+        self._write_mecode_version()
         self._write_header()
         if self.is_relative:
             self.write('G91')
