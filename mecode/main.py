@@ -194,10 +194,13 @@ class G(object):
         else:
             self.out_fd = None
 
+        self._check_latest_version()
+        self._write_mecode_version()
+
         if setup:
             self.setup()
 
-        self._check_latest_version()
+
 
     @property
     def current_position(self):
@@ -424,7 +427,7 @@ class G(object):
     def _write_mecode_version(self):
         version_str = f"made using mecode {self.version}"
 
-        total_width = len(version_str)
+        total_width = len(version_str) + 8
 
         semicolon_line = ";" * total_width
 
@@ -437,7 +440,6 @@ class G(object):
         method must be called before any other commands.
 
         """
-        self._write_mecode_version()
         self._write_header()
         if self.is_relative:
             self.write('G91')
