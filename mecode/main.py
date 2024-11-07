@@ -257,6 +257,8 @@ class G(object):
             if local_package_version is not None and remote_package_version is not None:
                 if version.parse(local_package_version) < version.parse(remote_package_version):
                     print("A new mecode version is available. To upgrade to the latest version run:\n\t>>> pip install git+https://github.com/rtellez700/mecode.git --upgrade")
+        
+        self.write(f"; made using mecode {local_package_version}")
 
     def __enter__(self):
         """
