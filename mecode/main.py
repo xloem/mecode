@@ -187,8 +187,8 @@ class G(object):
         else:
             self.out_fd = None
 
-        self._check_latest_version()
         if "unittest" not in sys.modules.keys():
+            self._check_latest_version()
             self._write_mecode_version()
 
         if setup:
