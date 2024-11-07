@@ -1,5 +1,3 @@
-
-import copy
 import numpy as np
 from mecode import G
 import warnings
@@ -49,45 +47,33 @@ class GMatrix3D(G):
 
     def translate(self, x=0, y=0, z=0):
         # Create a 3D translation matrix and apply it
-        translation_matrix = np.array([
-            [1, 0, 0, x],
-            [0, 1, 0, y],
-            [0, 0, 1, z],
-            [0, 0, 0, 1]
-        ])
+        translation_matrix = np.array(
+            [[1, 0, 0, x], [0, 1, 0, y], [0, 0, 1, z], [0, 0, 0, 1]]
+        )
         self.apply_transform(translation_matrix)
 
     def rotate_x(self, angle):
         # Create a rotation matrix around the X-axis
         c, s = np.cos(angle), np.sin(angle)
-        rotation_matrix = np.array([
-            [1, 0, 0, 0],
-            [0, c, -s, 0],
-            [0, s, c, 0],
-            [0, 0, 0, 1]
-        ])
+        rotation_matrix = np.array(
+            [[1, 0, 0, 0], [0, c, -s, 0], [0, s, c, 0], [0, 0, 0, 1]]
+        )
         self.apply_transform(rotation_matrix)
 
     def rotate_y(self, angle):
         # Create a rotation matrix around the Y-axis
         c, s = np.cos(angle), np.sin(angle)
-        rotation_matrix = np.array([
-            [c, 0, s, 0],
-            [0, 1, 0, 0],
-            [-s, 0, c, 0],
-            [0, 0, 0, 1]
-        ])
+        rotation_matrix = np.array(
+            [[c, 0, s, 0], [0, 1, 0, 0], [-s, 0, c, 0], [0, 0, 0, 1]]
+        )
         self.apply_transform(rotation_matrix)
 
     def rotate_z(self, angle):
         # Create a rotation matrix around the Z-axis
         c, s = np.cos(angle), np.sin(angle)
-        rotation_matrix = np.array([
-            [c, -s, 0, 0],
-            [s, c, 0, 0],
-            [0, 0, 1, 0],
-            [0, 0, 0, 1]
-        ])
+        rotation_matrix = np.array(
+            [[c, -s, 0, 0], [s, c, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+        )
         self.apply_transform(rotation_matrix)
 
     def scale(self, sx, sy=None, sz=None):
@@ -96,12 +82,9 @@ class GMatrix3D(G):
         if sz is None:
             sz = sx
         # Create a scaling matrix and apply it
-        scaling_matrix = np.array([
-            [sx, 0, 0, 0],
-            [0, sy, 0, 0],
-            [0, 0, sz, 0],
-            [0, 0, 0, 1]
-        ])
+        scaling_matrix = np.array(
+            [[sx, 0, 0, 0], [0, sy, 0, 0], [0, 0, sz, 0], [0, 0, 0, 1]]
+        )
         self.apply_transform(scaling_matrix)
 
     def abs_move(self, x=None, y=None, z=None, **kwargs):

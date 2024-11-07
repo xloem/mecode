@@ -44,3 +44,6 @@ exclude = [
     "./github",
     "/docs"
 ]
+
+[tool.ruff]
+exclude = ["mecode/developing_features"]

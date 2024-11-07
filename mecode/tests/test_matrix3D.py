@@ -1,20 +1,20 @@
 #!/usr/bin/env python
 
-from os.path import abspath, dirname, join
+from mecode import GMatrix3D
+from test_main import TestGFixture
+from os.path import abspath, dirname
 import unittest
-import sys
 import math
 import numpy as np
 
+
 HERE = dirname(abspath(__file__))
 
-try:
-    from mecode import GMatrix3D
-except ImportError:
-    sys.path.append(abspath(join(HERE, "..", "..")))
-    from mecode import GMatrix3D
-
-from test_main import TestGFixture
+# try:
+#     from mecode import GMatrix3D
+# except ImportError:
+#     sys.path.append(abspath(join(HERE, "..", "..")))
+#     from mecode import GMatrix3D
 
 
 class TestGMatrix3D(TestGFixture):
@@ -68,19 +68,19 @@ class TestGMatrix3D(TestGFixture):
         self.g.rect(10, 5)
         self.expect_cmd("""
         G1 F10
-        G1 X-5.000000 Y0.000000;
-        G1 X0.000000 Y10.000000;
-        G1 X5.000000 Y0.000000;
-        G1 X0.000000 Y-10.000000;
+        G1 X-5.000000 Y0.000000 Z0.000000;
+        G1 X0.000000 Y10.000000 Z0.000000;
+        G1 X5.000000 Y0.000000 Z0.000000;
+        G1 X0.000000 Y-10.000000 Z0.000000;
         """)
         self.g.pop_matrix()
         self.assert_almost_position({"x": 0, "y": 0, "z": 0})
         self.g.rect(10, 5)
         self.expect_cmd("""
-        G1 X0.000000 Y5.000000;
-        G1 X10.000000 Y0.000000;
-        G1 X0.000000 Y-5.000000;
-        G1 X-10.000000 Y0.000000;
+        G1 X0.000000 Y5.000000 Z0.000000;
+        G1 X10.000000 Y0.000000 Z0.000000;
+        G1 X0.000000 Y-5.000000 Z0.000000;
+        G1 X-10.000000 Y0.000000 Z0.000000;
         """)
         self.assert_output()
         self.assert_position({"x": 0, "y": 0, "z": 0})

@@ -1,7 +1,9 @@
 import numpy as np
 
 
-def profile_surface(g, kp, x_start, x_stop, x_step, y_start, y_stop, y_step, feed_rate = 5, dwell = 0.1):
+def profile_surface(
+    g, kp, x_start, x_stop, x_step, y_start, y_stop, y_step, feed_rate=5, dwell=0.1
+):
     """
     Parameters
     ----------
@@ -26,27 +28,50 @@ def profile_surface(g, kp, x_start, x_stop, x_step, y_start, y_stop, y_step, fee
     return surface
 
 
-def write_cal_file(path, surface, x_start, x_stop, x_step, y_start, y_stop,
-                   y_step, x_offset, y_offset, axis=4, mode='w+', ref_zero=True):
+def write_cal_file(
+    path,
+    surface,
+    x_start,
+    x_stop,
+    x_step,
+    y_start,
+    y_stop,
+    y_step,
+    x_offset,
+    y_offset,
+    axis=4,
+    mode="w+",
+    ref_zero=True,
+):
     if ref_zero is True:
         surface -= surface[0, 0]
     surface = surface.T
     with open(path, mode) as f:
-        #x_range = np.arange(x_start, x_stop, x_step)
-        #y_range = np.arange(y_start, y_stop, y_step)
+        # x_range = np.arange(x_start, x_stop, x_step)
+        # y_range = np.arange(y_start, y_stop, y_step)
         num_cols = surface.shape[1]
-        
-        f.write(';        RowAxis  ColumnAxis  OutputAxis1  OutputAxis2  SampDistRow  SampDistCol  NumCols\n')  #noqa
-        f.write(':START2D    2          1           1            2           {}          -{}        {}\n'.format(y_step, x_step, num_cols))  #noqa
-        f.write(':START2D OUTAXIS3={} POSUNIT=PRIMARY CORUNIT=PRIMARY OFFSETROW = {} OFFSETCOL={}\n'.format(axis, -(y_start+y_offset), -(x_start+x_offset)))  #noqa
-        
+
+        f.write(
+            ";        RowAxis  ColumnAxis  OutputAxis1  OutputAxis2  SampDistRow  SampDistCol  NumCols\n"
+        )  # noqa
+        f.write(
+            ":START2D    2          1           1            2           {}          -{}        {}\n".format(
+                y_step, x_step, num_cols
+            )
+        )  # noqa
+        f.write(
+            ":START2D OUTAXIS3={} POSUNIT=PRIMARY CORUNIT=PRIMARY OFFSETROW = {} OFFSETCOL={}\n".format(
+                axis, -(y_start + y_offset), -(x_start + x_offset)
+            )
+        )  # noqa
+
         for row in surface:
             for item in row:
-                f.write('0 0 ' + str(item) + '\t')
-            f.write('\n')
-            
-        f.write(':END\n')
+                f.write("0 0 " + str(item) + "\t")
+            f.write("\n")
+
+        f.write(":END\n")
 
 
-#profile_surface(g, kp, x_start, x_stop, x_step, y_start, y_stop, y_step):
-#write_cal_file('/Users/jack/Desktop/out.cal', np.ones((2, 3)), 1,1,1,1,1,1)
+# profile_surface(g, kp, x_start, x_stop, x_step, y_start, y_stop, y_step):
+# write_cal_file('/Users/jack/Desktop/out.cal', np.ones((2, 3)), 1,1,1,1,1,1)

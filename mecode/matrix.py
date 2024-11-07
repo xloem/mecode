@@ -1,4 +1,3 @@
-import copy
 import numpy as np
 from mecode import G
 import warnings
@@ -109,6 +108,16 @@ class GMatrix(G):
 
     def move(self, x=None, y=None, z=None, **kwargs):
         x_p, y_p, z_p = self._transform_point(x, y, z)
+
+        # x_p = np.round(x_p, self.output_digits)
+        # y_p = np.round(y_p, self.output_digits)
+        # z_p = np.round(z_p, self.output_digits)
+        # z = np.round(z, self.output_digits)
+
+        # x_p = 0 if x_p == 0 else x_p
+        # y_p = 0 if y_p == 0 else y_p
+        # z_p = 0 if z_p == 0 else z_p
+        # z = 0 if z == 0 else z
 
         # NOTE: untransformed z is being used here. If support for 3D transformations is added, this should be updated
         super(GMatrix, self).move(x_p, y_p, z, **kwargs)

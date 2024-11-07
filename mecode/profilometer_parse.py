@@ -1,17 +1,17 @@
 from collections import defaultdict
 import numpy as np
 
-#from mpl_toolkits.mplot3d import Axes3D
-#import matplotlib.pyplot as plt
+# from mpl_toolkits.mplot3d import Axes3D
+# import matplotlib.pyplot as plt
 
 
-def load_from_file(filename='profilometer_dump.txt', min_=2000, max_=31000):
+def load_from_file(filename="profilometer_dump.txt", min_=2000, max_=31000):
     with open(filename) as f:
         all_data = defaultdict(list)
         points = []
 
         for line in f:
-            if line.startswith(':'):
+            if line.startswith(":"):
                 x, y = [float(s) for s in line[1:].split()]
                 points.append((x, y))
             else:
@@ -34,20 +34,20 @@ def clean_values(values, window=0.2, center=None):
 
 
 def load_and_curate(filename, reset_start=None):
-    """ Load and process the data from the calibration filedump.
-    
+    """Load and process the data from the calibration filedump.
+
     Parameters
     ----------
     filename : path
         Path to the file containing the calibration dump
     reset_start : len 2 tuple or None
         If not None, shift calibration data to supplied starting point.
-        
+
     Returns
     -------
     cal_data : Nx3 array
         The array containing calibration deltas.
-    
+
     """
     all_data, points = load_from_file(filename)
 
@@ -76,9 +76,8 @@ def load_and_curate(filename, reset_start=None):
     return cal_data
 
 
+# fig = plt.figure()
+# ax = fig.gca(projection='3d')
+# surf = ax.scatter(x, y, z)
 
-#fig = plt.figure()
-#ax = fig.gca(projection='3d')
-#surf = ax.scatter(x, y, z)
-
-#plt.show()
+# plt.show()

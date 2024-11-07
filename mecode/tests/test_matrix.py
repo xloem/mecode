@@ -1,20 +1,19 @@
 #! /usr/bin/env python
 
-from os.path import abspath, dirname, join
+from test_main import TestGFixture
+from os.path import abspath, dirname
 import unittest
-import sys
 import math
 import numpy as np
+from mecode import GMatrix
 
 HERE = dirname(abspath(__file__))
 
-try:
-    from mecode import GMatrix
-except:
-    sys.path.append(abspath(join(HERE, "..", "..")))
-    from mecode import GMatrix
-
-from test_main import TestGFixture
+# try:
+#     from mecode import GMatrix
+# except ImportError:
+#     sys.path.append(abspath(join(HERE, "..", "..")))
+#     from mecode import GMatrix
 
 
 class TestGMatrix(TestGFixture):
@@ -57,6 +56,9 @@ class TestGMatrix(TestGFixture):
         self.g.rotate(math.pi / 4)
         self.g.rotate(math.pi / 4)
         self.g.rect(10, 5)
+        # print('>>> history', self.g.history)
+        # for h in self.g.history:
+        #     print(h[''])
         self.expect_cmd("""
         G1 F10
         G1 X-5.000000 Y0.000000;
@@ -100,8 +102,7 @@ class TestGMatrix(TestGFixture):
 
         self.g.pop_matrix()
         self.g.abs_move(z=2)
-        self.assert_almost_position({'x': 0, 'y': 1, 'z': 2})
-
+        self.assert_almost_position({"x": 0, "y": 1, "z": 2})
 
         self.expect_cmd("""
         G1 F10
@@ -119,7 +120,6 @@ class TestGMatrix(TestGFixture):
         self.g.scale(2.0, 2.0)
         self.g.abs_move(x=1)
         self.assert_almost_position({"x": 2, "y": 0, "z": 0})
-
 
     @unittest.skip("Skipping `test_arc` until arc function is fixed")
     def test_arc(self):
