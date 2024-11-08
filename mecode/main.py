@@ -224,7 +224,7 @@ class G(object):
 
                 # Use regular expression to find the version string
                 version_match = re.search(
-                    r"__version__\s*=\s*'(\d+\.\d+\.\d+)'", response.text
+                    r'__version__\s*=\s*"(\d+\.\d+\.\d+)"', response.text
                 )
 
                 if version_match:
