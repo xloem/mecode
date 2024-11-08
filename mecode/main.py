@@ -603,6 +603,10 @@ class G(object):
 
             x, y, z = v_rot
 
+            x = x - self._current_position["x"] if self.is_relative else x
+            y = y - self._current_position["y"] if self.is_relative else y
+            z = z - self._current_position["z"] if self.is_relative else z
+
             self._update_current_position(x=x, y=y, z=z, color=color, **kwargs)
 
         self._update_print_time(x, y, z)
