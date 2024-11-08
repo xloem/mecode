@@ -583,6 +583,16 @@ class G(object):
                 raise ValueError(
                     f"Both k and theta need to be supplied but got k={k} and theta={theta}"
                 )
+
+            if self.is_relative:
+                x = 0 if x is None else x
+                y = 0 if y is None else y
+                z = 0 if z is None else z
+            else:
+                x = self._current_position["x"] if x is None else x
+                y = self._current_position["y"] if y is None else y
+                z = self._current_position["z"] if z is None else z
+
             v = np.array([x, y, z])
             k = k / np.linalg.norm(k)  # Ensure k is a unit vector
             v_rot = (
@@ -593,11 +603,10 @@ class G(object):
 
             x, y, z = v_rot
 
+            self._update_current_position(x=x, y=y, z=z, color=color, **kwargs)
+
         self._update_print_time(x, y, z)
-        # new_state = self.history[-1].copy()
-        # new_state['COORDS'] = (x, y, z)
-        # new_state['CURRENT_POSITION'] = {'X': self._current_position['x'], 'Y': self._current_position['y'], 'Z': self._current_position['z']}
-        # self.history.append(new_state)
+
         args = self._format_args(x, y, z, **kwargs)
 
         cmd = "G0 " if rapid else "G1 "
