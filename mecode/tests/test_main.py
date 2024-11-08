@@ -387,7 +387,7 @@ class TestG(TestGFixture):
         with self.assertRaises(RuntimeError):
             self.g.arc(x=10, y=10, radius=1, linearize=False)
 
-    @unittest.skip("Skipping `test_meander` for now")
+    @unittest.skip("Skipping `test_abs_arc` for now")
     def test_abs_arc(self):
         self.g.feed(1)
         self.g.relative()
