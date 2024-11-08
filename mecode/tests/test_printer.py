@@ -4,14 +4,13 @@ from mock import Mock
 import os
 from time import sleep
 from threading import Thread
-
-try:
-    from threading import _Event as Event
-except ImportError:
-    # The _Event class was renamed to Event in python 3.
-    from threading import Event
-
+import sys
 import serial
+from threading import Event
+
+# added to speed up unittests
+#   refer to: https://github.com/python/cpython/issues/104391
+sys.setswitchinterval(0.001)
 
 
 HERE = os.path.dirname(os.path.abspath(__file__))
